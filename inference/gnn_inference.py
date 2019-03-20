@@ -12,8 +12,8 @@ Options:
 
 import torch
 import torch.nn as nn
-from inference.core import Inference
-
+from core import Inference
+from model_pytorch import GGNN
 
 # class GatedGNN(nn.Module):
 #     def __init__(self):
@@ -32,10 +32,10 @@ from inference.core import Inference
 #         pass
 
 
-class GatedGNNInference(GatedGNN, Inference):
+class GatedGNNInference(GGNN, Inference):
     def __init__(self, mode):
         Inference.__init__(self, mode)  # self.mode set here
-        GatedGNN.__init__(self)
+        GGNN.__init__(self)
 
     def forward(self):
         """ Forward computation that depends on the mode """
