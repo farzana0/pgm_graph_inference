@@ -5,31 +5,18 @@ inference, given a graphical model.
 Authors: kkorovin@cs.cmu.edu
 
 Options:
-- Gated Graph neural network
+- Gated Graph neural network:
+https://github.com/thaonguyen19/gated-graph-neural-network-pytorch/blob/master/model_pytorch.py
 - TBA
 
 """
 
 import torch
 import torch.nn as nn
-from core import Inference
-from model_pytorch import GGNN
 
-# class GatedGNN(nn.Module):
-#     def __init__(self):
-#         pass
-
-#     def forward(self):
-#         pass
-
-#     def infer(self, graphs):
-        
-#         This method should raise an error if self is
-#         not initialized to trained model.
-
-#         1) Returns inference results,
-#         2) and also sets estimated marginals/MAPs in graphs.
-#         pass
+# local
+from inference.core import Inference
+from inference.ggnn_model import GGNN
 
 
 class GatedGNNInference(GGNN, Inference):
@@ -41,4 +28,7 @@ class GatedGNNInference(GGNN, Inference):
         """ Forward computation that depends on the mode """
         # Call to super forward
         # wrap up depending on mode
+        raise NotImplementedError
+
+    def run(self, graphs):
         raise NotImplementedError

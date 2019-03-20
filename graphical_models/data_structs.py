@@ -9,6 +9,7 @@ from inference import get_algorithm
 
 dflt_algo = {"marginal": "bp", "map": "bp"}
 
+
 class GraphicalModel:
     def __init__(self, params, default_algo=dflt_algo):
         """Constructor
