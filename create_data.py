@@ -1,7 +1,7 @@
 """
 
 Data creation helpers and action.
-Authors: kkorovin@cs.cmu.edu
+Authors: kkorovin@cs.cmu.edu (main)
 
 """
 

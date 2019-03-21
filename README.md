@@ -9,6 +9,14 @@
 * `train.py` uses one of generated datasets to train a GNN inference procedure (such as GatedGNN)
 * `experiments` directory contains inference experiments. If an experiment uses GNN inference, it first checks if an appropriate pretrained model has been trained (using `train.py`).
 
+## Getting started
+
+For imports to work correctly, add root of the repository to `PYTHONPATH` by running
+
+```bash
+source setup.sh
+```
+
 ## References
 
 [ICLR18](https://arxiv.org/abs/1803.07710)
