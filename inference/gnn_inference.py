@@ -2,7 +2,7 @@
 
 Defines GNNInference objects: models that perform
 inference, given a graphical model.
-Authors: kkorovin@cs.cmu.edu
+Authors: kkorovin@cs.cmu.edu, mark.cheung@cmu.edu
 
 Options:
 - Gated Graph neural network:
