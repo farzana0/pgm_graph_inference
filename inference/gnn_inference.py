@@ -15,8 +15,8 @@ import torch
 import torch.nn as nn
 
 # local
-from inference.core import Inference
-from inference.ggnn_model import GGNN
+from core import Inference
+from ggnn_model import GGNN
 
 
 class GatedGNNInference(GGNN, Inference):

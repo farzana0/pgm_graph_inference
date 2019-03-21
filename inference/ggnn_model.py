@@ -78,7 +78,7 @@ class GGNN(nn.Module):
     def __init__(self, state_dim, annotation_dim, n_edge_types, n_nodes, n_steps):
         super(GGNN, self).__init__()
 
-        assert (state_dim >= annotation_dim, 'state_dim must be no less than annotation_dim')
+        assert state_dim >= annotation_dim, 'state_dim must be no less than annotation_dim'
 
         self.state_dim = state_dim
         self.annotation_dim = annotation_dim
