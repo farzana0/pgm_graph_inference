@@ -13,3 +13,6 @@ class Inference:
 
     def run(self, graphs):
         raise NotImplementedError("Implement in a child class.")
+
+    def __repr__(self):
+        return "Algorithm {} in mode {}".format(self.__class__.__name__, self.mode)

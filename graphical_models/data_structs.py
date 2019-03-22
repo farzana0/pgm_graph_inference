@@ -25,25 +25,41 @@ class GraphicalModel:
         self.algo_marginal = default_algo["marginal"]
         self.algo_map = default_algo["map"]
 
-    def set_ground_truth(self):
-        pass
+    def set_ground_truth(self, marginal_est=None, map_est=None):
+        """ Setting labels:
+        To be used when instantiating
+        a model from saved parameters
+        """
+        self.marginal = marginal_est
+        self.map = map_est
 
-    def get_marginal(self, i, algo=None):
-        if algo is None:
-            algo = self.algo_marginal
-        algo_obj = get_algorithm(algo)
-        # algo_obj(get_map)
+    # Running inference with/without Inference object
+    def get_marginals(self, algo_obj=None, algo=None):
+        if algo_obj is None:
+            if algo is None:
+                algo = self.algo_marginal
+            algo_obj = get_algorithm(algo)
+        inf_res = algo_obj.run(self, mode="marginal")
+        return inf_res
 
-    def get_map(self, algo=None):
-        if algo is None:
-            algo = self.algo_map
-        algo_obj = get_algorithm(algo)
-        # algo_obj(get_map)
+    def get_map(self, algo_obj=None, algo=None):
+        if algo_obj is None:
+            if algo is None:
+                algo = self.algo_map
+            algo_obj = get_algorithm(algo)
+        inf_res = algo_obj.run(self, mode="map")
+        return inf_res
 
 
 class BinaryMRF(GraphicalModel):
-    pass
-
+    def __init__(self, W, b):
+        self.W = W
+        self.b = b
+        self.default_algo = {"marginal": "bp",
+                             "map": "bp"}
+        params = {"W": W, "b": b}
+        super(BinaryMRF, self).__init__(params,
+                                        self.default_algo)
 
 if __name__ == "__main__":
     print(get_algorithm("bp"))
