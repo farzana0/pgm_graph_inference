@@ -11,10 +11,11 @@ dflt_algo = {"marginal": "bp", "map": "bp"}
 
 
 class GraphicalModel:
-    def __init__(self, params, default_algo=dflt_algo):
+    def __init__(self, n_nodes, params=None, default_algo=dflt_algo):
         """Constructor
 
         Arguments:
+            n_nodes {int} - number of vertices in graphical model
             params {dictionary<str,np.array> or None} -- parameters of the model
 
         Keyword Arguments:
@@ -50,16 +51,34 @@ class GraphicalModel:
         inf_res = algo_obj.run(self, mode="map")
         return inf_res
 
+    def __repr__(self):
+        return "GraphicalModel:{} on {} nodes".format(
+            self.__class__.__name__, self.n_nodes)
+
 
 class BinaryMRF(GraphicalModel):
-    def __init__(self, W, b):
+    def __init__(self, W, b, struct=None):
+        """Constructor of BinaryMRF class.
+
+        Arguments:
+            W {np.array} -- (N, N) matrix of pairwise parameters
+            b {np.array} -- (N,) vector of unary parameters
+        
+        Keyword Arguments:
+            struct {string or None} -- description of graph structure
+                                       (default: {None})
+        """
         self.W = W
         self.b = b
+        self.struct = struct
+        self.n_nodes = len(W)
         self.default_algo = {"marginal": "bp",
                              "map": "bp"}
-        params = {"W": W, "b": b}
-        super(BinaryMRF, self).__init__(params,
-                                        self.default_algo)
+        # params = {"W": W, "b": b}
+        super(BinaryMRF, self).__init__(
+            n_nodes=self.n_nodes,
+            default_algo=self.default_algo)
+
 
 if __name__ == "__main__":
     print(get_algorithm("bp"))

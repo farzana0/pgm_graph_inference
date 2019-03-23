@@ -5,10 +5,11 @@ Authors: kkorovin@cs.cmu.edu
 
 """
 
-from inference.bp import *
-from inference.gnn_inference import *
-from inference.exact import *
-from inference.mcmc import *
+from inference.bp import BeliefPropagation
+from inference.gnn_inference import GatedGNNInference
+from inference.exact import ExactInference
+from inference.mcmc import GibbsSampling
+
 
 def get_algorithm(algo_name):
     """ Returns a constructor """
