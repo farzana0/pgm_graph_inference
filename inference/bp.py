@@ -84,20 +84,22 @@ class BeliefPropagation(Inference):
             if error < epsilon: break
 
         # calculate marginal or map
-        if self.mode == "marginal":
-            marginals = np.zeros([n_V, 2])
-            for i in range(n_V):
-                marginals[i] = graph.b[i]*xi
-                for j in neighbors[i]:
-                    marginals[i] += messages[index_bases[j]+neighbors[j].index(i)] 
-            marginals = np.exp(marginals)
-            # normalize
-            marginals /= marginals.sum(axis=1, keepdims=True)
-            return marginals
-        else: 
-            # backtracking of MAP 
+        probs = np.zeros([n_V, 2])
+        for i in range(n_V):
+            probs[i] = graph.b[i]*xi
+            for j in neighbors[i]:
+                probs[i] += messages[index_bases[j]+neighbors[j].index(i)] 
+        probs = np.exp(probs)
+        # normalize
+        if self.mode == 'marginal':
+            results = probs / probs.sum(axis=1, keepdims=True)
 
-            return None
+        if self.mode == 'map':
+            results = np.argmax(probs, axis=1)
+            results[results==0] = -1
+
+        return results
+
 
     def run(self, graphs):
         res = []
