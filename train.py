@@ -2,7 +2,7 @@
 Training of the GNNInference objects
 Typical training loop, resulting in saved models
 (in inference/pretrained)
-Authors: kkorovin@cs.cmu.edu (main)
+Authors: kkorovin@cs.cmu.edu (main), markcheu@andrew.cmu.edu
 
 TODO:
 * think how to specify an experiment; 
@@ -41,14 +41,14 @@ if __name__ == "__main__":
     dataset = get_dataset_by_name(args.train_set_name, args.data_dir)
 
     # TODO: fit a GNN on these graphs
-    P = 2 # message dim
+    P = 2 # message dim P
     n_hidden_states = 2
     gnn_constructor = get_algorithm("gnn_inference")
-    gnn_inference = gnn_constructor('marginal',dataset[0].W.shape[0],n_hidden_states, P)
+    gnn_inference = gnn_constructor('marginal', dataset[0].W.shape[0], n_hidden_states, P)
     optimizer = Adam(gnn_inference.model.parameters(), lr=1e-2)
     criterion = nn.BCELoss()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    gnn_inference.run(dataset,optimizer,criterion,device)
+    gnn_inference.run(dataset, optimizer, criterion, device)
 
     # TODO: training loop, assuming the
     # map vs marginals part is handled in forward
