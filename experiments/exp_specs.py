@@ -17,7 +17,7 @@ data_dir = "./graphical_models/datasets"
 data_specs = {
     "debug": 
             {"star": [5],
-              "fc":   []}
+              "fc":   []},
     "debug_test":
             {"star": [5],
               "fc":   []}
