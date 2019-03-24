@@ -13,6 +13,7 @@ def repackage_hidden(h):
     else:
         return tuple(repackage_hidden(v) for v in h)
 
+
 class AttrProxy(object):
     """
     Translates index lookups into attribute lookups.
@@ -22,6 +23,7 @@ class AttrProxy(object):
     def __init__(self, module, prefix):
         self.module = module
         self.prefix = prefix
+
 
     def __getitem__(self, i):
         return getattr(self.module, self.prefix + str(i))
@@ -51,6 +53,7 @@ class Propagator(nn.Module):
             nn.Tanh()
         )
         self.state_dim = state_dim
+
 
     def forward(self, state_in, state_out, state_cur, A,b): #A = [A_in, A_out]
         A_in = A[:, :, :self.n_nodes*self.n_edge_types]
@@ -118,6 +121,7 @@ class GGNN(nn.Module):
             if isinstance(m, nn.Linear):
                 m.weight.data.normal_(0.0, 0.02)
                 m.bias.data.fill_(0)
+
 
     def forward(self, prop_state, annotation, A,b):
         for i_step in range(self.n_steps):

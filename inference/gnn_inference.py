@@ -37,8 +37,17 @@ class GatedGNNInference(Inference):
         # wrap up depending on mode
         self.model.eval()
         with torch.no_grad():
+            annotation=torch.zeros(1,self.n_nodes,self.annotation_dim).float()
+            padding = torch.zeros(len(annotation), self.n_nodes, self.state_dim - self.annotation_dim).float()
+            init_input = torch.cat((annotation, padding), 2).to(device)
+
             probs=np.ones(self.n_nodes)/self.n_nodes #TODO, for testing only
+            b = torch.from_numpy(graph.b).unsqueeze(0).float().to(device)
+            adj = torch.from_numpy(np.concatenate((graph.W, graph.W.T),axis=1)).unsqueeze(0).float().to(device)
             
+            output = self.model(init_input, annotation,adj,b)
+            loss = criterion(output.squeeze(1), target)
+
 
     def run(self, dataset, optimizer, criterion, device):
         #TODO: exact probs need to be in dataset
@@ -59,4 +68,4 @@ class GatedGNNInference(Inference):
             loss = criterion(output.squeeze(1), target)
             loss.backward()
             optimizer.step()
-            print(output)
+            # print(output)

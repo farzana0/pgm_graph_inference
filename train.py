@@ -44,7 +44,7 @@ if __name__ == "__main__":
     gnn_constructor = get_algorithm("gnn_inference")
     gnn_inference = gnn_constructor('marginal',dataset[0].W.shape[0])
     optimizer = Adam(gnn_inference.model.parameters(), lr=1e-2)
-    criterion=nn.BCELoss()
+    criterion = nn.BCELoss()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     gnn_inference.run(dataset,optimizer,criterion,device)
 
