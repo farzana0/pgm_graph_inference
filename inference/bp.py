@@ -7,7 +7,7 @@ Authors: kkorovin@cs.cmu.edu
          lingxiao@cmu.edu
 """
 
-from core import Inference
+from inference.core import Inference
 import numpy as np 
 from scipy.misc import logsumexp
 
@@ -77,7 +77,8 @@ class BeliefPropagation(Inference):
                     j = neighbor[k]
                     messages[index_bases[i]+k] = in_message_prod - (messages[index_bases[j]+neighbors[j].index(i)])
                 # update
-                messages[index_bases[i]:index_vbases[i]+degrees[i]] = sumOp(messages[index_bases[i]:index_bases[i]+degrees[i]].reshape(degrees[i],2,1) + local_potential, axis=1)
+                # shapes mismatch here
+                messages[index_bases[i]:index_bases[i]+degrees[i]] = sumOp(messages[index_bases[i]:index_bases[i]+degrees[i]].reshape(degrees[i],2,1) + local_potential, axis=1)
 
             # check convergence 
             error = (messages - old_messages).mean()
@@ -107,6 +108,7 @@ class BeliefPropagation(Inference):
             res.append(self.run_one(graph))
         return res
 
+
 if __name__ == "__main__":
     bp = BeliefPropagation("marginal")
-    # test
+    
