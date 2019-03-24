@@ -59,6 +59,7 @@ def construct_binary_mrf(struct, n_nodes):
         np.array -- BinaryMRF object
     """
     W = np.random.normal(0., 1., (n_nodes, n_nodes))
+    W = (W + W.T) / 2
     b = np.random.normal(0., 0.25, n_nodes)
     mask = generate_struct_mask(struct, n_nodes)
     W *= mask
@@ -97,6 +98,7 @@ if __name__=="__main__":
         os.makedirs(directory, exist_ok=True)
         data = {"W": graph.W, "b": graph.b,
                 "marginal": res_marginal, "map": res_map}
+        print(graph.W)
         path_to_graph = os.path.join(directory, str(id(data)))
         np.save(path_to_graph, data)
 
