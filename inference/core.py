@@ -11,6 +11,11 @@ class Inference:
             raise ValueError("Inference mode {} not supported".format(mode))
         self.mode = mode
 
+    def reset_mode(self, mode):
+        if mode not in ["marginal", "map"]:
+            raise ValueError("Inference mode {} not supported".format(mode))
+        self.mode = mode
+
     def run(self, graphs):
         raise NotImplementedError("Implement in a child class.")
 
