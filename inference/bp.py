@@ -7,7 +7,7 @@ Authors: kkorovin@cs.cmu.edu
          lingxiao@cmu.edu
 """
 
-from core import Inference
+from inference.core import Inference
 import numpy as np 
 from scipy.misc import logsumexp
 
