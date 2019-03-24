@@ -51,13 +51,12 @@ class GatedGNNInference(Inference):
             self.model.zero_grad()
             probs=np.ones(self.n_nodes)/self.n_nodes #TODO, for testing only
 
-            b = torch.from_numpy(graph.b).float().to(device) #Todo, unused
+            b = torch.from_numpy(graph.b).unsqueeze(0).float().to(device)
+            adj = torch.from_numpy(np.concatenate((graph.W, graph.W.T),axis=1)).unsqueeze(0).float().to(device)
             target =torch.from_numpy(probs).float().to(device)
 
-            adj = torch.from_numpy(np.concatenate((graph.W, graph.W.T),axis=1)).to(device)
-            adj=adj.unsqueeze(0).float()
-            output = self.model(init_input, annotation,adj)
-            # print(output)
+            output = self.model(init_input, annotation,adj,b)
             loss = criterion(output.squeeze(1), target)
             loss.backward()
             optimizer.step()
+            print(output)

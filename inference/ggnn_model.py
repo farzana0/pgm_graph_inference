@@ -52,14 +52,14 @@ class Propagator(nn.Module):
         )
         self.state_dim = state_dim
 
-    def forward(self, state_in, state_out, state_cur, A): #A = [A_in, A_out]
+    def forward(self, state_in, state_out, state_cur, A,b): #A = [A_in, A_out]
         A_in = A[:, :, :self.n_nodes*self.n_edge_types]
         A_out = A[:, :, self.n_nodes*self.n_edge_types:]
 
         a_in = torch.bmm(A_in, state_in) #batch size x |V| x state dim
         a_out = torch.bmm(A_out, state_out)
         a = torch.cat((a_in, a_out, state_cur), 2) #batch size x |V| x 3*state dim
-
+        a = a + b.unsqueeze(2)
         r = self.reset_gate(a.view(-1, self.state_dim*3)) #batch size*|V| x state_dim 
         z = self.update_gate(a.view(-1, self.state_dim*3))
         r = r.view(-1, self.n_nodes, self.state_dim)
@@ -81,7 +81,7 @@ class GGNN(nn.Module):
     def __init__(self, state_dim, annotation_dim, n_edge_types, n_nodes, n_steps):
         super(GGNN, self).__init__()
 
-        assert (state_dim >= annotation_dim, 'state_dim must be no less than annotation_dim')
+        assert state_dim >= annotation_dim, 'state_dim must be no less than annotation_dim'
 
         self.state_dim = state_dim
         self.annotation_dim = annotation_dim
@@ -105,9 +105,11 @@ class GGNN(nn.Module):
         self.graph_rep = nn.Sequential(
             nn.Linear(self.state_dim + self.annotation_dim, self.state_dim), #self.state_dim + self.annotation_dim
             nn.Tanh(),
+            # nn.ReLU(), #TODO
             nn.Linear(self.state_dim, 1)
         )
         self.score = nn.Linear(self.n_nodes, 1)
+        self.softmax=nn.Softmax(dim=0)
         self._initialization()
 
 
@@ -117,7 +119,7 @@ class GGNN(nn.Module):
                 m.weight.data.normal_(0.0, 0.02)
                 m.bias.data.fill_(0)
 
-    def forward(self, prop_state, annotation, A):
+    def forward(self, prop_state, annotation, A,b):
         for i_step in range(self.n_steps):
             #print ("PROP STATE SIZE:", prop_state.size()) #batch size x |V| x state dim
             in_states = []
@@ -130,10 +132,11 @@ class GGNN(nn.Module):
             out_states = torch.stack(out_states).transpose(0, 1).contiguous()
             out_states = out_states.view(-1, self.n_nodes*self.n_edge_types, self.state_dim) #batch size x |V||E| x state dim
 
-            prop_state = self.propagator(in_states, out_states, prop_state, A)
+            prop_state = self.propagator(in_states, out_states, prop_state, A,b)
         join_state = torch.cat((prop_state, annotation), 2) #batch size x |V| x 2*state dim
         output = self.graph_rep(join_state.view(-1, self.state_dim + self.annotation_dim))
 
         # out = self.score(output.view(-1, self.n_nodes))
-        #output = output.sum(1)
+        # output = output.sum(1)
+        output = self.softmax(output)
         return output
