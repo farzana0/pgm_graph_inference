@@ -22,13 +22,12 @@ from inference.ggnn_model import GGNN
 
 
 class GatedGNNInference(Inference):
-    def __init__(self, mode, n_nodes, state_dim=2, annotation_dim=1,
-            n_edge_types=1, n_steps=10):
+    def __init__(self, mode, n_nodes, state_dim=2, message_dim=2, n_steps=10):
         Inference.__init__(self, mode)  # self.mode set here        
-        self.model=GGNN(state_dim, annotation_dim, n_edge_types, n_nodes, n_steps)
-        self.n_nodes=n_nodes
-        self.state_dim=state_dim
-        self.annotation_dim=annotation_dim
+        self.model = GGNN(n_nodes, state_dim, message_dim, n_steps)
+        self.n_nodes = n_nodes
+        self.state_dim = state_dim
+        self.message_dim = message_dim
 
 
     def forward(self, graph, criterion, device):
@@ -53,19 +52,16 @@ class GatedGNNInference(Inference):
         #TODO: exact probs need to be in dataset
         # for i, graph,probs in enumerate(dataset,0):
         self.model.train()
-        annotation=torch.zeros(1,self.n_nodes,self.annotation_dim).float()
-        padding = torch.zeros(len(annotation), self.n_nodes, self.state_dim - self.annotation_dim).float()
-        init_input = torch.cat((annotation, padding), 2).to(device)
         for i, graph in enumerate(dataset):
             self.model.zero_grad()
             probs=np.ones(self.n_nodes)/self.n_nodes #TODO, for testing only
 
-            b = torch.from_numpy(graph.b).unsqueeze(0).float().to(device)
-            adj = torch.from_numpy(np.concatenate((graph.W, graph.W.T),axis=1)).unsqueeze(0).float().to(device)
+            b = torch.from_numpy(graph.b).float().to(device)
+            J = torch.from_numpy(graph.W).float().to(device)
             target =torch.from_numpy(probs).float().to(device)
 
-            output = self.model(init_input, annotation,adj,b)
-            loss = criterion(output.squeeze(1), target)
+            out = self.model(J,b)
+            # print(out,target)
+            loss = criterion(out, target)
             loss.backward()
             optimizer.step()
-            # print(output)
