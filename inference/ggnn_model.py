@@ -2,6 +2,9 @@
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
+import torch
+import torch.nn as nn
+from torch.autograd import Variable
 
 def repackage_hidden(h):
     """Wraps hidden states in new Variables, to detach them from their history."""
@@ -78,7 +81,7 @@ class GGNN(nn.Module):
     def __init__(self, state_dim, annotation_dim, n_edge_types, n_nodes, n_steps):
         super(GGNN, self).__init__()
 
-        assert state_dim >= annotation_dim, 'state_dim must be no less than annotation_dim'
+        assert (state_dim >= annotation_dim, 'state_dim must be no less than annotation_dim')
 
         self.state_dim = state_dim
         self.annotation_dim = annotation_dim
@@ -130,7 +133,7 @@ class GGNN(nn.Module):
             prop_state = self.propagator(in_states, out_states, prop_state, A)
         join_state = torch.cat((prop_state, annotation), 2) #batch size x |V| x 2*state dim
         output = self.graph_rep(join_state.view(-1, self.state_dim + self.annotation_dim))
-        out = self.score(output.view(-1, self.n_nodes))
 
+        # out = self.score(output.view(-1, self.n_nodes))
         #output = output.sum(1)
-        return out
+        return output

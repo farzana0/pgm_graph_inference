@@ -39,12 +39,14 @@ def parse_train_args():
 if __name__ == "__main__":
     args = parse_train_args()
     dataset = get_dataset_by_name(args.train_set_name, args.data_dir)
+
     # TODO: fit a GNN on these graphs
     gnn_constructor = get_algorithm("gnn_inference")
-    
-    gnn = gnn_constructor(<ARGS>)
-    opt = Adam(gnn.parameters(), lr=1e-2)
-    # criterion = binary cross entropy
+    gnn_inference = gnn_constructor('marginal',dataset[0].W.shape[0])
+    optimizer = Adam(gnn_inference.model.parameters(), lr=1e-2)
+    criterion=nn.BCELoss()
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    gnn_inference.run(dataset,optimizer,criterion,device)
 
     # TODO: training loop, assuming the
     # map vs marginals part is handled in forward
