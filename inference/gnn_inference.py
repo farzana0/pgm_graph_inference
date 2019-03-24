@@ -37,8 +37,8 @@ class GatedGNNInference(Inference):
         # wrap up depending on mode
         self.model.eval()
         with torch.no_grad():
-            graph.W=(graph.W+graph.W.T)/2 #TODO, for testing only
-
+            probs=np.ones(self.n_nodes)/self.n_nodes #TODO, for testing only
+            
 
     def run(self, dataset, optimizer, criterion, device):
         #TODO: exact probs need to be in dataset
@@ -54,20 +54,10 @@ class GatedGNNInference(Inference):
             b = torch.from_numpy(graph.b).float().to(device) #Todo, unused
             target =torch.from_numpy(probs).float().to(device)
 
-            adj = torch.from_numpy(self.create_adj(graph.W)).to(device)
+            adj = torch.from_numpy(np.concatenate((graph.W, graph.W.T),axis=1)).to(device)
             adj=adj.unsqueeze(0).float()
             output = self.model(init_input, annotation,adj)
             # print(output)
             loss = criterion(output.squeeze(1), target)
             loss.backward()
             optimizer.step()
-
-    def create_adj(self, W):
-        n_nodes=W.shape[0]
-        A=np.zeros((n_nodes,n_nodes*2))
-        for i in range(n_nodes):
-            for j in range(n_nodes):
-                if(W[i][j]!=0):
-                    A[i,j]=W[i][j]
-                    A[j,i+n_nodes]=W[i][j]
-        return A
