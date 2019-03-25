@@ -47,7 +47,7 @@ if __name__ == "__main__":
     hidden_unit_message_dim = 64 
     hidden_unit_readout_dim = 64
     T = 10
-    learning_rate = 1e-3
+    learning_rate = 1e-2
     epochs = 10
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -55,7 +55,9 @@ if __name__ == "__main__":
     gnn_inference = gnn_constructor('marginal', n_nodes, n_hidden_states, 
         message_dim_P,hidden_unit_message_dim, hidden_unit_readout_dim, T)
     optimizer = Adam(gnn_inference.model.parameters(), lr=learning_rate)
-    criterion = nn.BCELoss()
+    criterion = nn.KLDivLoss()
+    # criterion = nn.MSELoss()
+
     for epoch in range(epochs):
         gnn_inference.run(dataset, optimizer, criterion, device)
 

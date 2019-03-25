@@ -65,19 +65,26 @@ class GatedGNNInference(Inference):
             J = torch.from_numpy(graph.W).float().to(device)
             target =torch.from_numpy(graph.marginal).float().to(device)
             out = self.model(J,b)
-            loss = criterion(out, target)
+            # loss = criterion(torch.log(out[:,0]), target[:,0])
+            # test = criterion(torch.log(torch.tensor([0.4,0.4,0.5])),torch.tensor([0.4,0.4,0.5]))
+            # print(test)
+            loss = criterion(torch.log(out), target)
             
             # loss.backward()
             # optimizer.step()
             # self.model.zero_grad()            
             batch_loss.append(loss)
 
-            if((i+1)%100==0):
+            if((i+1)%50==0):
                 ll_mean = torch.stack(batch_loss).mean()
                 ll_mean.backward()
                 optimizer.step()
                 self.model.zero_grad()
                 batch_loss=[]
+                print(i)
                 print('loss', ll_mean.item())
+                print('Out: \n', out)
+                print('Target: \n', target)
+
         # t = "_".join(str(time()).split("."))
         # self.save_model(t)
