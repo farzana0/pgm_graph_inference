@@ -45,12 +45,9 @@ class GGNN(nn.Module):
 
     #unbatch version for debugging
     def forward(self, J,b):
-        message_i_j = torch.zeros(self.n_nodes, self.n_nodes, self.message_dim)
-        message_i = torch.zeros(self.n_nodes, self.message_dim)
         readout = torch.zeros(self.n_nodes)
-
         hidden_states = torch.zeros(self.n_nodes,self.state_dim)
-
+        message_i_j = torch.zeros(self.n_nodes, self.n_nodes, self.message_dim)
 
         for step in range(self.n_steps):
             for i in range(self.n_nodes):
@@ -58,20 +55,12 @@ class GGNN(nn.Module):
                     message_in = torch.cat([hidden_states[i,:],hidden_states[j,:],J[i,j].unsqueeze(0),b[i].unsqueeze(0),b[j].unsqueeze(0)])
                     message_i_j[i,j,:] = self.message_passing(message_in)
 
-
-            for i in range(self.n_nodes):
-                for j in range(self.n_nodes):
-                    message_i[i] = message_i[i] + message_i_j[j,i,:]
-            # message_i=torch.sum(message_i_j,0)
-
+            message_i=torch.sum(message_i_j,0)
 
             for i in range(self.n_nodes):
                 gru_in = torch.cat([hidden_states[i,:],message_i[i]])
-                gru_in = gru_in.unsqueeze(0).unsqueeze(0) #input of shape (seq_len, batch, input_size)
+                gru_in = gru_in.unsqueeze(0).unsqueeze(0) #input of shape (seq_len, batch, input_size)                
                 hidden_states[i,:],_ = self.propagator(gru_in)
-
-        # for i in range(self.n_nodes):
-            # readout[i] = self.readout(hidden_states[i,:])
         readout = self.readout(hidden_states)
         readout = self.sigmoid(readout)
         return readout
