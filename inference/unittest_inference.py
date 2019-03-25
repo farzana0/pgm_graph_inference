@@ -12,19 +12,13 @@ import numpy as np
 import unittest
 
 from inference import get_algorithm
-from graphical_models import BinaryMRF
+from graphical_models import construct_binary_mrf 
+
 
 class TestInference(unittest.TestCase):
     def setUp(self):
-        # A star graph with binary Wij and bi=0.5
-        n = 5
-        #W = np.ones((n,n))
-        W = np.random.normal(0., 1., (n, n))
-        W = (W + W.T)/2
-        W[1:, 1:] = 0
-        W[range(n), range(n)] = 0
-        b = np.ones(n) * 0.5
-        self.graph = BinaryMRF(W, b)
+        self.graph = construct_binary_mrf("star", n_nodes=5)
+        self.graph2 = construct_binary_mrf("fc", n_nodes=5)
 
     def test_exact(self):
         exact = get_algorithm("exact")("marginal")

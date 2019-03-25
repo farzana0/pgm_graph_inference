@@ -4,8 +4,8 @@ Implements MCMC inference procedures.
 Authors: kkorovin@cs.cmu.edu
 
 TODO:
-* implement Gibbs sampling
-* (or MH in the case Gibbs is not possible)
+* How to obtain a MAP estimate from samples?
+  (some sources suggest temperature in MH)
 """
 
 from inference.core import Inference
@@ -32,9 +32,6 @@ class GibbsSampling(Inference):
                 X[j] = +1 if np.random.rand() < p else -1
             samples.append(np.copy(X))
         return np.array(samples[burn_in::stride])
-
-    def function():
-        pass
 
     def collect_samples(self, graphs, n):
         samples = []
