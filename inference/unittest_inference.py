@@ -39,6 +39,7 @@ class TestInference(unittest.TestCase):
     def test_exact(self):
         # check probs computation
         exact = get_algorithm("exact")("marginal")
+        print("exact")
         print(exact.run([self.graph]))
         #exact.reset_mode("map")
         #print(exact.run([self.graph]))
@@ -47,11 +48,13 @@ class TestInference(unittest.TestCase):
         # BP fails on n=2 and n=3 star (on fully-conn n=3 - ok)
         bp = get_algorithm("bp")("marginal")
         res = bp.run([self.graph])
+        print("bp")
         print(res)
 
     def test_mcmc(self):
         mcmc = get_algorithm("mcmc")("marginal")
         res = mcmc.run([self.graph])
+        print("mcmc")
         print(res)
 
     def test_gnn(self):

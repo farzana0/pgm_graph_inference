@@ -38,7 +38,7 @@ class BeliefPropagation(Inference):
         else:
             sumOp = np.max
         # storage, W should be symmetric 
-        max_iters = 1000
+        max_iters = 100
         epsilon = 1e-10 # determines when to stop
 
         row, col = np.where(graph.W)
@@ -55,13 +55,6 @@ class BeliefPropagation(Inference):
         # sort nodes by neighbor size 
         ordered_nodes = np.argsort(degrees)
 
-        # print('='*30)
-        # print(degrees)
-        # print(index_bases)
-        # print(neighbors)
-        # print(ordered_nodes)
-        # print('='*30)
-
         # init messages based on graph structure (E, 2)
         # messages are ordered (out messages)
         messages = np.log(np.ones([n_E, 2])/2)  # log
@@ -70,7 +63,7 @@ class BeliefPropagation(Inference):
         for _ in range(max_iters):
             converged = True
             # save old message for checking convergence
-            old_messages = messages[:]
+            old_messages = messages.copy()
             # update messages 
             for i in ordered_nodes:
                 neighbor = neighbors[i]
@@ -89,9 +82,11 @@ class BeliefPropagation(Inference):
                 messages[index_bases[i]:index_bases[i]+degrees[i]] = sumOp(messages[index_bases[i]:index_bases[i]+degrees[i]].reshape(degrees[i],2,1) + local_potential, axis=1)
 
             # check convergence 
-            error = (messages - old_messages).mean()
+            error = (messages - old_messages)**2
+            error = error.mean()
+            print(error)
             if error < epsilon: break
-            
+
         print("Is BP converged: {}".format(converged))
 
         # calculate marginal or map

@@ -23,7 +23,7 @@ class GibbsSampling(Inference):
         tmp = self.W[i, :].dot(X)
         return sigmoid(2 * (tmp + self.u[i]))
 
-    def gibbs_sampling(self, n, burn_in=100, stride=2):
+    def gibbs_sampling(self, n, burn_in=1000, stride=2):
         X = np.array([1 if np.random.rand() < .5 else -1 for i in range(self.d)])
         samples = [np.copy(X)]
         for i in range(stride*n + burn_in-1):
@@ -45,7 +45,7 @@ class GibbsSampling(Inference):
 
         return samples
 
-    def run(self, graphs, n=100):
+    def run(self, graphs, n=1000):
         graphs_samples = self.collect_samples(graphs, n)
         res = []
         for samples, graph in zip(graphs_samples, graphs):
