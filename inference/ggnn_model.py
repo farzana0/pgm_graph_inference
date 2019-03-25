@@ -17,10 +17,20 @@ class GGNN(nn.Module):
         self.propagator = nn.GRU(self.state_dim+self.message_dim, self.state_dim)
         self.message_passing = nn.Sequential(
             nn.Linear(2*self.state_dim+1+2, self.message_dim),
-            nn.ReLU()
+            nn.ReLU(),
+            nn.Linear(self.message_dim, self.message_dim),
+            nn.ReLU(),
+            nn.Linear(self.message_dim, self.message_dim),
+            nn.ReLU(),
         )
-        # self.hidden_states = nn.Parameter(torch.zeros(self.n_nodes,self.state_dim))
-        self.readout = nn.Linear(self.state_dim,self.state_dim)
+        self.readout = nn.Sequential(
+            nn.Linear(self.state_dim, self.message_dim),
+            nn.ReLU(),
+            nn.Linear(self.message_dim, self.message_dim),
+            nn.ReLU(),
+            nn.Linear(self.message_dim, 2),
+            nn.ReLU(),
+        )
         self.softmax = nn.Softmax(dim=0)
         self.sigmoid = nn.Sigmoid()
         self._initialization()
@@ -59,7 +69,6 @@ class GGNN(nn.Module):
                 gru_in = torch.cat([hidden_states[i,:],message_i[i]])
                 gru_in = gru_in.unsqueeze(0).unsqueeze(0) #input of shape (seq_len, batch, input_size)
                 hidden_states[i,:],_ = self.propagator(gru_in)
-
 
         # for i in range(self.n_nodes):
             # readout[i] = self.readout(hidden_states[i,:])

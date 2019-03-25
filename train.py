@@ -41,8 +41,8 @@ if __name__ == "__main__":
     dataset = get_dataset_by_name(args.train_set_name, args.data_dir)
 
     # TODO: fit a GNN on these graphs
-    P = 2 # message dim P
-    n_hidden_states = 2
+    P = 64 # message dim P
+    n_hidden_states = 8
     gnn_constructor = get_algorithm("gnn_inference")
     gnn_inference = gnn_constructor('marginal', dataset[0].W.shape[0], n_hidden_states, P)
     optimizer = Adam(gnn_inference.model.parameters(), lr=1e-2)

@@ -65,24 +65,20 @@ class GatedGNNInference(Inference):
         self.model.train()
         self.model.zero_grad()
         batch_loss=[]
-        for i, graph in enumerate(dataset):
-            b = torch.from_numpy(graph.b).float().to(device)
-            J = torch.from_numpy(graph.W).float().to(device)
-            target =torch.from_numpy(graph.marginal).float().to(device)
-            out = self.model(J,b)
-            loss = criterion(out, target)
-            # batch_loss.append(loss)
-            loss.backward()
-            optimizer.step()
-            # print(loss)
-            if((i+1)%100==0):
-                print('target: ',target)
-                print('output: ',out)
-                print('loss', loss)
+        epochs=10
+        for epoch in range(epochs):
+            for i, graph in enumerate(dataset):
+                b = torch.from_numpy(graph.b).float().to(device)
+                J = torch.from_numpy(graph.W).float().to(device)
+                target =torch.from_numpy(graph.marginal).float().to(device)
+                out = self.model(J,b)
+                loss = criterion(out, target)
+                batch_loss.append(loss)
 
-            #     # ll = torch.stack(batch_loss).sum()
-            #     ll_mean = torch.stack(batch_loss).mean()
-            #     ll_mean.backward()
-            #     optimizer.step()
-            #     self.model.zero_grad()
-            #     print(ll_mean)
+                if((i+1)%50==0):
+                    ll_mean = torch.stack(batch_loss).mean()
+                    ll_mean.backward()
+                    optimizer.step()
+                    self.model.zero_grad()
+                    batch_loss=[]
+                    print('loss', ll_mean)
