@@ -67,6 +67,6 @@ if __name__=="__main__":
         data = {"W": graph.W, "b": graph.b,
                 "marginal": res_marginal, "map": res_map}
         pprint(data)
-        path_to_graph = os.path.join(directory, str(id(data)))
+        path_to_graph = os.path.join(directory, str(id(graph)))
         np.save(path_to_graph, data)
 
