@@ -69,7 +69,7 @@ class GatedGNNInference(Inference):
             # test = criterion(torch.log(torch.tensor([0.4,0.4,0.5])),torch.tensor([0.4,0.4,0.5]))
             # print(test)
             loss = criterion(torch.log(out), target)
-            
+
             # loss.backward()
             # optimizer.step()
             # self.model.zero_grad()            

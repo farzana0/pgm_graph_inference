@@ -12,13 +12,7 @@ from inference.core import Inference
 
 class ExactInference(Inference):
     """ Special case BinaryMRF implementation """
-    def run_one(self, graph):
-        W = graph.W
-        b = graph.b
-        n = graph.n_nodes
-
-        # compute joint probabilities
-        # array of shape [2,...,2]
+    def compute_probs(self, W, b, n):
         log_potentials = np.zeros([2]*n)
         for state in itertools.product([0, 1], repeat=n):
             state_ind = np.array(state)
@@ -26,9 +20,16 @@ class ExactInference(Inference):
             log_potentials[state] = state_val.dot(W.dot(state_val)) + b.dot(state_val)
         probs = np.exp(log_potentials)
         probs /= probs.sum()
-        # probs now contain probabilities of all states
+        return probs
 
-        # print(probs)
+    def run_one(self, graph):
+        W = graph.W
+        b = graph.b
+        n = graph.n_nodes
+
+        # compute joint probabilities
+        # array of shape [2,...,2]
+        probs = self.compute_probs(W, b, n)
         # print("M1:", probs[0, :, :].sum(), probs[1, :, :].sum())
         # print("M2:", probs[:, 0, :].sum(), probs[:, 1, :].sum())
 

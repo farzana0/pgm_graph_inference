@@ -55,6 +55,7 @@ if __name__ == "__main__":
     gnn_inference = gnn_constructor('marginal', n_nodes, n_hidden_states, 
         message_dim_P,hidden_unit_message_dim, hidden_unit_readout_dim, T)
     optimizer = Adam(gnn_inference.model.parameters(), lr=learning_rate)
+
     criterion = nn.KLDivLoss()
     # criterion = nn.MSELoss()
 

@@ -18,6 +18,9 @@ data_specs = {
     "debug": 
             {"star": [5],
               "fc":   []},
+    "larger_debug": 
+            {"star": [10],
+              "fc":   []},
     "debug_test":
             {"star": [5],
               "fc":   []}
