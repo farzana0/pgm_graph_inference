@@ -60,7 +60,8 @@ class GGNN(nn.Module):
         readout = torch.zeros(self.n_nodes)
         hidden_states = torch.zeros(self.n_nodes,self.state_dim)
         message_i_j = torch.zeros(self.n_nodes, self.n_nodes, self.message_dim)
-
+        # gru_hiddens = torch.zeros(self.n_steps,self.n_nodes,self.state_dim)
+        gru_hiddens = []
         for step in range(self.n_steps):
             for i in range(self.n_nodes):
                 for j in range(self.n_nodes):
@@ -71,13 +72,19 @@ class GGNN(nn.Module):
 
             for i in range(self.n_nodes):
                 gru_in = torch.cat([hidden_states[i,:],message_i[i]])
-                gru_in = gru_in.unsqueeze(0).unsqueeze(0) #input of shape (seq_len, batch, input_size)                
-                hidden_states[i,:],_ = self.propagator(gru_in)
+                gru_in = gru_in.unsqueeze(0).unsqueeze(0) #shape (seq_len, batch, input_size)                
+                
+                if(step==0):
+                    hidden_states[i,:], h_t = self.propagator(gru_in)
+                    gru_hiddens.append(h_t)
+                else:#(step<self.n_steps-1):
+                    hidden_states[i,:], h_t = self.propagator(gru_in,gru_hiddens[i+(step-1)*self.n_nodes])
+                    gru_hiddens.append(h_t)
 
-        print('Hidden states', hidden_states)
-        print(hidden_states.shape,self.state_dim)
+        # print('Hidden states', hidden_states)
+        # print(hidden_states.shape,self.state_dim)
         readout = self.readout(hidden_states)
-        print('readout (pre-sigmoid)', readout)
+        # print('readout (pre-sigmoid)', readout)
         readout = self.sigmoid(readout)
 
         return readout

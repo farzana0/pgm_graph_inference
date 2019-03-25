@@ -40,21 +40,24 @@ if __name__ == "__main__":
     args = parse_train_args()
     dataset = get_dataset_by_name(args.train_set_name, args.data_dir)
 
-    # TODO: fit a GNN on these graphs
+    # GGNN parmeters
+    n_nodes = dataset[0].W.shape[0]
+    n_hidden_states = 5
+    message_dim_P = 5
     hidden_unit_message_dim = 64 
     hidden_unit_readout_dim = 64
-    n_nodes = dataset[0].W.shape[0]
-    message_dim_P = 5
-    n_hidden_states = 5
     T = 10
-    
+    learning_rate = 1e-3
+    epochs = 10
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
     gnn_constructor = get_algorithm("gnn_inference")
     gnn_inference = gnn_constructor('marginal', n_nodes, n_hidden_states, 
         message_dim_P,hidden_unit_message_dim, hidden_unit_readout_dim, T)
-    optimizer = Adam(gnn_inference.model.parameters(), lr=1e-3)
+    optimizer = Adam(gnn_inference.model.parameters(), lr=learning_rate)
     criterion = nn.BCELoss()
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    gnn_inference.run(dataset, optimizer, criterion, device)
+    for epoch in range(epochs):
+        gnn_inference.run(dataset, optimizer, criterion, device)
 
 
     # TODO: training loop, assuming the

@@ -39,7 +39,8 @@ class GatedGNNInference(Inference):
     def forward(self, graph, device):
         """ Forward computation that depends on the mode """
         # Call to super forward
-        # wrap up depending on mode
+        # wrap up depending on mode 
+        self.model.to(device)
         self.model.eval()
         with torch.no_grad():
             b = torch.from_numpy(graph.b).float().to(device)
@@ -54,25 +55,29 @@ class GatedGNNInference(Inference):
     def run(self, dataset, optimizer, criterion, device):
         #TODO: exact probs need to be in dataset
         # for i, graph,probs in enumerate(dataset,0):
+        self.model.to(device)
         self.model.train()
         self.model.zero_grad()
-        batch_loss=[]
-        epochs=10
-        for epoch in range(epochs):
-            for i, graph in enumerate(dataset):
-                b = torch.from_numpy(graph.b).float().to(device)
-                J = torch.from_numpy(graph.W).float().to(device)
-                target =torch.from_numpy(graph.marginal).float().to(device)
-                out = self.model(J,b)
-                loss = criterion(out, target)
-                batch_loss.append(loss)
 
-                if((i+1)%50==0):
-                    ll_mean = torch.stack(batch_loss).mean()
-                    ll_mean.backward()
-                    optimizer.step()
-                    self.model.zero_grad()
-                    batch_loss=[]
-                    print('loss', ll_mean)
+        batch_loss=[]
+        for i, graph in enumerate(dataset):
+            b = torch.from_numpy(graph.b).float().to(device)
+            J = torch.from_numpy(graph.W).float().to(device)
+            target =torch.from_numpy(graph.marginal).float().to(device)
+            out = self.model(J,b)
+            loss = criterion(out, target)
+            
+            # loss.backward()
+            # optimizer.step()
+            # self.model.zero_grad()            
+            batch_loss.append(loss)
+
+            if((i+1)%100==0):
+                ll_mean = torch.stack(batch_loss).mean()
+                ll_mean.backward()
+                optimizer.step()
+                self.model.zero_grad()
+                batch_loss=[]
+                print('loss', ll_mean.item())
         # t = "_".join(str(time()).split("."))
         # self.save_model(t)
