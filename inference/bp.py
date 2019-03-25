@@ -38,7 +38,7 @@ class BeliefPropagation(Inference):
         else:
             sumOp = np.max
         # storage, W should be symmetric 
-        max_iters = 100
+        max_iters = 1000
         epsilon = 1e-10 # determines when to stop
 
         row, col = np.where(graph.W)
@@ -54,9 +54,17 @@ class BeliefPropagation(Inference):
         neighbors = {k: sorted(v) for k, v in neighbors.items()}
         # sort nodes by neighbor size 
         ordered_nodes = np.argsort(degrees)
+
+        # print('='*30)
+        # print(degrees)
+        # print(index_bases)
+        # print(neighbors)
+        # print(ordered_nodes)
+        # print('='*30)
+
         # init messages based on graph structure (E, 2)
         # messages are ordered (out messages)
-        messages = np.zeros([n_E, 2])  # log
+        messages = np.log(np.ones([n_E, 2])/2)  # log
         xij = np.array([[1,-1],[-1,1]])
         xi = np.array([-1, 1])
         for _ in range(max_iters):
@@ -68,21 +76,23 @@ class BeliefPropagation(Inference):
                 neighbor = neighbors[i]
                 Jij = graph.W[i][neighbor] # vector 
                 bi = graph.b[i]            # scalar
-                local_potential = Jij.reshape(-1,1,1)*xij + bi*xi.reshape(-1,1,1) 
+                local_potential = Jij.reshape(-1,1,1)*xij + bi*xi.reshape(-1,1)
                 # get in messages product (log)
                 in_message_prod = 0
                 for j in neighbor:
                     in_message_prod += messages[index_bases[j]+neighbors[j].index(i)]
+
                 for k in range(degrees[i]):
                     j = neighbor[k]
                     messages[index_bases[i]+k] = in_message_prod - (messages[index_bases[j]+neighbors[j].index(i)])
                 # update
-                # shapes mismatch here
                 messages[index_bases[i]:index_bases[i]+degrees[i]] = sumOp(messages[index_bases[i]:index_bases[i]+degrees[i]].reshape(degrees[i],2,1) + local_potential, axis=1)
 
             # check convergence 
             error = (messages - old_messages).mean()
             if error < epsilon: break
+            
+        print("Is BP converged: {}".format(converged))
 
         # calculate marginal or map
         probs = np.zeros([n_V, 2])
