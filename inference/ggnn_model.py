@@ -7,30 +7,42 @@ import torch
 import torch.nn as nn
 
 class GGNN(nn.Module):
-    def __init__(self, n_nodes, state_dim, message_dim, n_steps=10):
+    def __init__(self, n_nodes, state_dim, message_dim,hidden_unit_message_dim, hidden_unit_readout_dim, n_steps=10):
         super(GGNN, self).__init__()
 
         self.state_dim = state_dim
         self.n_nodes = n_nodes
         self.n_steps = n_steps
         self.message_dim = message_dim
+        self.hidden_unit_message_dim = hidden_unit_message_dim
+        self.hidden_unit_readout_dim = hidden_unit_readout_dim
+        
         self.propagator = nn.GRU(self.state_dim+self.message_dim, self.state_dim)
         self.message_passing = nn.Sequential(
-            nn.Linear(2*self.state_dim+1+2, self.message_dim),
+            nn.Linear(2*self.state_dim+1+2, self.hidden_unit_message_dim),
+            # 2 for each hidden state, 1 for J[i,j], 1 for b[i] and 1 for b[j]
             nn.ReLU(),
-            nn.Linear(self.message_dim, self.message_dim),
+            nn.Linear(self.hidden_unit_message_dim, self.hidden_unit_message_dim),
             nn.ReLU(),
-            nn.Linear(self.message_dim, self.message_dim),
+            nn.Linear(self.hidden_unit_message_dim, self.message_dim),
             nn.ReLU(),
         )
         self.readout = nn.Sequential(
-            nn.Linear(self.state_dim, self.message_dim),
+            nn.Linear(self.state_dim, self.hidden_unit_readout_dim),
             nn.ReLU(),
-            nn.Linear(self.message_dim, self.message_dim),
+            nn.Linear(self.hidden_unit_readout_dim, self.hidden_unit_readout_dim),
             nn.ReLU(),
-            nn.Linear(self.message_dim, 2),
+            nn.Linear(self.hidden_unit_readout_dim, 2),
             nn.ReLU(),
         )
+        # self.readout = nn.Sequential(
+        #     nn.Linear(self.state_dim, 2),
+        #     # nn.ReLU(),
+        #     # nn.Linear(self.message_dim, self.message_dim),
+        #     # nn.ReLU(),
+        #     # nn.Linear(self.message_dim, 2),
+        #     # nn.ReLU(),
+        # )
         self.softmax = nn.Softmax(dim=0)
         self.sigmoid = nn.Sigmoid()
         self._initialization()
@@ -39,7 +51,7 @@ class GGNN(nn.Module):
     def _initialization(self):
         for m in self.modules():
             if isinstance(m, nn.Linear):
-                m.weight.data.normal_(0.0, 0.02)
+                m.weight.data.normal_(0, 0.01)
                 m.bias.data.fill_(0)
 
 
@@ -61,6 +73,11 @@ class GGNN(nn.Module):
                 gru_in = torch.cat([hidden_states[i,:],message_i[i]])
                 gru_in = gru_in.unsqueeze(0).unsqueeze(0) #input of shape (seq_len, batch, input_size)                
                 hidden_states[i,:],_ = self.propagator(gru_in)
+
+        print('Hidden states', hidden_states)
+        print(hidden_states.shape,self.state_dim)
         readout = self.readout(hidden_states)
+        print('readout (pre-sigmoid)', readout)
         readout = self.sigmoid(readout)
+
         return readout

@@ -15,6 +15,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 import torch.optim as optim
+from time import time
 
 # local
 from inference.core import Inference
@@ -22,12 +23,10 @@ from inference.ggnn_model import GGNN
 
 
 class GatedGNNInference(Inference):
-    def __init__(self, mode, n_nodes, state_dim=2, message_dim=2, n_steps=10, load_path=None):
-        Inference.__init__(self, mode)  # self.mode set here        
-        self.model = GGNN(n_nodes, state_dim, message_dim, n_steps)
-        self.n_nodes = n_nodes
-        self.state_dim = state_dim
-        self.message_dim = message_dim
+    def __init__(self, mode, n_nodes, state_dim, message_dim, hidden_unit_message_dim, hidden_unit_readout_dim, n_steps=10, load_path=None):
+        Inference.__init__(self, mode)   
+        self.mode = mode   
+        self.model = GGNN(n_nodes, state_dim, message_dim,hidden_unit_message_dim, hidden_unit_readout_dim, n_steps)
 
         if load_path is not None:
             self.model.load_state_dict(
@@ -37,7 +36,7 @@ class GatedGNNInference(Inference):
                     loc: storage))
             self.model.eval()
 
-    def forward(self, graph, criterion, device):
+    def forward(self, graph, device):
         """ Forward computation that depends on the mode """
         # Call to super forward
         # wrap up depending on mode
@@ -46,7 +45,7 @@ class GatedGNNInference(Inference):
             b = torch.from_numpy(graph.b).float().to(device)
             J = torch.from_numpy(graph.W).float().to(device)
             out = self.model(J,b)
-
+            return out.detach().cpu().numpy()
 
     def save_model(self, path):
         torch.save(self.model.state_dict(), path)
@@ -75,3 +74,5 @@ class GatedGNNInference(Inference):
                     self.model.zero_grad()
                     batch_loss=[]
                     print('loss', ll_mean)
+        # t = "_".join(str(time()).split("."))
+        # self.save_model(t)

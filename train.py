@@ -41,11 +41,17 @@ if __name__ == "__main__":
     dataset = get_dataset_by_name(args.train_set_name, args.data_dir)
 
     # TODO: fit a GNN on these graphs
-    P = 64 # message dim P
-    n_hidden_states = 8
+    hidden_unit_message_dim = 64 
+    hidden_unit_readout_dim = 64
+    n_nodes = dataset[0].W.shape[0]
+    message_dim_P = 5
+    n_hidden_states = 5
+    T = 10
+    
     gnn_constructor = get_algorithm("gnn_inference")
-    gnn_inference = gnn_constructor('marginal', dataset[0].W.shape[0], n_hidden_states, P)
-    optimizer = Adam(gnn_inference.model.parameters(), lr=1e-2)
+    gnn_inference = gnn_constructor('marginal', n_nodes, n_hidden_states, 
+        message_dim_P,hidden_unit_message_dim, hidden_unit_readout_dim, T)
+    optimizer = Adam(gnn_inference.model.parameters(), lr=1e-3)
     criterion = nn.BCELoss()
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     gnn_inference.run(dataset, optimizer, criterion, device)
