@@ -16,8 +16,8 @@ class GGNN(nn.Module):
         self.message_dim = message_dim
         self.hidden_unit_message_dim = hidden_unit_message_dim
         self.hidden_unit_readout_dim = hidden_unit_readout_dim
-        
-        self.propagator = nn.GRUCell(self.state_dim+self.message_dim, self.state_dim)
+
+        self.propagator = nn.GRUCell(self.message_dim, self.state_dim)
         self.message_passing = nn.Sequential(
             nn.Linear(2*self.state_dim+1+2, self.hidden_unit_message_dim),
             # 2 for each hidden state, 1 for J[i,j], 1 for b[i] and 1 for b[j]
@@ -57,11 +57,7 @@ class GGNN(nn.Module):
                     message_i_j[i,j,:] = self.message_passing(message_in)
 
             message_i=torch.sum(message_i_j,0)
-
-            # batch, input (treat each node as a sample)
-            gru_in = torch.cat([hidden_states,message_i],1)
-            
-            hidden_states = self.propagator(gru_in,hidden_states)
+            hidden_states = self.propagator(message_i,hidden_states)
 
         readout = self.readout(hidden_states)
         readout = self.sigmoid(readout)
