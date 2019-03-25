@@ -55,7 +55,7 @@ class GibbsSampling(Inference):
             # for each graph, compute pos and neg probs
             if self.mode == "marginal":
                 # for each [:, i], compute empirical shares of -1 and 1
-                binary_samples = np.where(samples == -1, 0, 1)
+                binary_samples = np.where(samples < 0, 0, 1)
                 pos_probs = binary_samples.mean(axis=0)
                 neg_pos = np.stack([1-pos_probs, pos_probs], axis=1)
                 assert neg_pos.shape == (graph.n_nodes, 2)

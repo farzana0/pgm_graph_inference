@@ -17,19 +17,18 @@ class ExactInference(Inference):
         b = graph.b
         n = graph.n_nodes
 
-        print(W, b)
-
         # compute joint probabilities
         # array of shape [2,...,2]
         log_potentials = np.zeros([2]*n)
         for state in itertools.product([0, 1], repeat=n):
             state_ind = np.array(state)
             state_val = 2 * state_ind - 1
-            log_potentials[state_ind] = state_val.dot(W.dot(state_val)) + b.dot(state_val)
+            log_potentials[state] = state_val.dot(W.dot(state_val)) + b.dot(state_val)
         probs = np.exp(log_potentials)
         probs /= probs.sum()
         # probs now contain probabilities of all states
 
+        # print(probs)
         # print("M1:", probs[0, :, :].sum(), probs[1, :, :].sum())
         # print("M2:", probs[:, 0, :].sum(), probs[:, 1, :].sum())
 
