@@ -11,6 +11,7 @@ import os
 import argparse
 import numpy as np
 from pprint import pprint
+from time import time
 
 from graphical_models import construct_binary_mrf
 from inference import get_algorithm
@@ -66,7 +67,9 @@ if __name__=="__main__":
         os.makedirs(directory, exist_ok=True)
         data = {"W": graph.W, "b": graph.b,
                 "marginal": res_marginal, "map": res_map}
-        pprint(data)
-        path_to_graph = os.path.join(directory, str(id(graph)))
+        #pprint(data)
+
+        t = "_".join(str(time()).split("."))
+        path_to_graph = os.path.join(directory, t)
         np.save(path_to_graph, data)
 
