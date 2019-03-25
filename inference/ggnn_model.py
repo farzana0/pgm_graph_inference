@@ -43,7 +43,8 @@ class GGNN(nn.Module):
         #     # nn.Linear(self.message_dim, 2),
         #     # nn.ReLU(),
         # )
-        self.softmax = nn.Softmax(dim=0)
+        # self.softmax = nn.Softmax(dim=0)
+        
         self.sigmoid = nn.Sigmoid()
         self._initialization()
 
@@ -81,10 +82,9 @@ class GGNN(nn.Module):
                     hidden_states[i,:], h_t = self.propagator(gru_in,gru_hiddens[i+(step-1)*self.n_nodes])
                     gru_hiddens.append(h_t)
 
-        # print('Hidden states', hidden_states)
-        # print(hidden_states.shape,self.state_dim)
+        print('Hidden states', hidden_states)
         readout = self.readout(hidden_states)
-        # print('readout (pre-sigmoid)', readout)
+        print('readout (pre-sigmoid)', readout)
         readout = self.sigmoid(readout)
 
         return readout
