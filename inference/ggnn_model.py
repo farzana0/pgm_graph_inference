@@ -20,9 +20,9 @@ class GGNN(nn.Module):
             nn.ReLU()
         )
         # self.hidden_states = nn.Parameter(torch.zeros(self.n_nodes,self.state_dim))
-        self.readout = nn.Linear(self.state_dim,1)
+        self.readout = nn.Linear(self.state_dim,self.state_dim)
         self.softmax = nn.Softmax(dim=0)
-
+        self.sigmoid = nn.Sigmoid()
         self._initialization()
 
 
@@ -61,9 +61,8 @@ class GGNN(nn.Module):
                 hidden_states[i,:],_ = self.propagator(gru_in)
 
 
-        for i in range(self.n_nodes):
-            readout[i] = self.readout(hidden_states[i,:])
-        # readout = self.readout(self.hidden_states)
-
-        out = self.softmax(readout)
-        return out
+        # for i in range(self.n_nodes):
+            # readout[i] = self.readout(hidden_states[i,:])
+        readout = self.readout(hidden_states)
+        readout = self.sigmoid(readout)
+        return readout

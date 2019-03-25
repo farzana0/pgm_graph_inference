@@ -50,5 +50,6 @@ if __name__ == "__main__":
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     gnn_inference.run(dataset, optimizer, criterion, device)
 
+
     # TODO: training loop, assuming the
     # map vs marginals part is handled in forward
