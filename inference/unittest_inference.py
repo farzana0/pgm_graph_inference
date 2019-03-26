@@ -14,7 +14,7 @@ import unittest
 from inference import get_algorithm
 from graphical_models import construct_binary_mrf 
 import torch
-
+import os
 class TestInference(unittest.TestCase):
     def setUp(self):
         self.graph = construct_binary_mrf("star", n_nodes=5)
@@ -73,12 +73,16 @@ class TestInference(unittest.TestCase):
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
         gnn_constructor = get_algorithm("gnn_inference")
-        gnn_inference = gnn_constructor('marginal', n_nodes, n_hidden_states, 
-            message_dim_P,hidden_unit_message_dim, hidden_unit_readout_dim, T,'pretrained/gnn_model.pt')
-        
-        out = gnn_inference.run(graph,device)
-        print('gnn')
-        print(out)
+        exists = os.path.isfile('pretrained/gnn_model.pt')
+        if(exists):
+            gnn_inference = gnn_constructor('marginal', n_nodes, n_hidden_states, 
+                message_dim_P,hidden_unit_message_dim, hidden_unit_readout_dim, T,'pretrained/gnn_model.pt')
+            
+            out = gnn_inference.run(graph,device)
+            print('gnn')
+            print(out)
+        else:
+            print('pretrained model needed')
 
 
 if __name__ == "__main__":
