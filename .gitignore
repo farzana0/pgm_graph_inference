@@ -4,3 +4,4 @@ graphical_models/datasets/
 inference/pretrained/
 
 .DS_Store
+*.ipynb
