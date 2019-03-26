@@ -82,7 +82,7 @@ class BeliefPropagation(Inference):
                 messages[index_bases[i]:index_bases[i]+degrees[i]] = sumOp(messages[index_bases[i]:index_bases[i]+degrees[i]].reshape(degrees[i],2,1) + local_potential, axis=1)
 
             # check convergence 
-            error = (messages - old_messages)**2
+            error = (np.exp(messages) - np.exp(old_messages))**2
             error = error.mean()
             print(error)
             if error < epsilon: break
@@ -95,9 +95,13 @@ class BeliefPropagation(Inference):
             probs[i] = graph.b[i]*xi
             for j in neighbors[i]:
                 probs[i] += messages[index_bases[j]+neighbors[j].index(i)] 
-        probs = np.exp(probs)
+
         # normalize
         if self.mode == 'marginal':
+            # print(probs)
+            probs -= np.max(probs, axis=1, keepdims=True)
+            # print(probs)
+            probs = np.exp(probs)
             results = probs / probs.sum(axis=1, keepdims=True)
 
         if self.mode == 'map':
