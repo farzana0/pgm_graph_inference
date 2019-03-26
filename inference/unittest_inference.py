@@ -13,7 +13,7 @@ import unittest
 
 from inference import get_algorithm
 from graphical_models import construct_binary_mrf 
-
+import torch
 
 class TestInference(unittest.TestCase):
     def setUp(self):
@@ -59,9 +59,26 @@ class TestInference(unittest.TestCase):
 
     def test_gnn(self):
         # print("Testing GNN constructor")
-        # gnn = get_algorithm("gnn_inference")("map", OTHER ARGS)
-        # print(gnn)
-        pass
+
+        # GGNN parmeters
+        graph = self.graph
+        n_nodes = graph.W.shape[0]
+        n_hidden_states = 5
+        message_dim_P = 5
+        hidden_unit_message_dim = 64 
+        hidden_unit_readout_dim = 64
+        T = 10
+        learning_rate = 1e-2
+        epochs = 10
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+        gnn_constructor = get_algorithm("gnn_inference")
+        gnn_inference = gnn_constructor('marginal', n_nodes, n_hidden_states, 
+            message_dim_P,hidden_unit_message_dim, hidden_unit_readout_dim, T,'pretrained/gnn_model.pt')
+        
+        out = gnn_inference.run(graph,device)
+        print('gnn')
+        print(out)
 
 
 if __name__ == "__main__":

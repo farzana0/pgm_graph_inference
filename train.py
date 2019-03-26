@@ -17,7 +17,7 @@ from torch.optim import Adam
 
 from experiments.exp_specs import get_dataset_by_name
 from inference import get_algorithm
-
+from time import time
 
 def parse_train_args():
     parser = argparse.ArgumentParser()
@@ -60,8 +60,9 @@ if __name__ == "__main__":
     # criterion = nn.MSELoss()
 
     for epoch in range(epochs):
-        gnn_inference.run(dataset, optimizer, criterion, device)
-
+        gnn_inference.train(dataset, optimizer, criterion, device)
+        t = "_".join(str(time()).split("."))
+        gnn_inference.save_model(t)
 
     # TODO: training loop, assuming the
     # map vs marginals part is handled in forward
