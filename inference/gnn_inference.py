@@ -15,7 +15,6 @@ import torch
 import torch.nn as nn
 import numpy as np
 import torch.optim as optim
-from time import time
 
 # local
 from inference.core import Inference
@@ -36,7 +35,7 @@ class GatedGNNInference(Inference):
                     loc: storage))
             self.model.eval()
 
-    def forward(self, graph, device):
+    def run(self, graph, device):
         """ Forward computation that depends on the mode """
         # Call to super forward
         # wrap up depending on mode 
@@ -51,8 +50,7 @@ class GatedGNNInference(Inference):
     def save_model(self, path):
         torch.save(self.model.state_dict(), path)
 
-
-    def run(self, dataset, optimizer, criterion, device):
+    def train(self, dataset, optimizer, criterion, device):
         #TODO: exact probs need to be in dataset
         # for i, graph,probs in enumerate(dataset,0):
         self.model.to(device)
@@ -75,7 +73,7 @@ class GatedGNNInference(Inference):
             # self.model.zero_grad()            
             batch_loss.append(loss)
 
-            if((i+1)%50==0):
+            if(i%50==0):
                 ll_mean = torch.stack(batch_loss).mean()
                 ll_mean.backward()
                 optimizer.step()
@@ -86,5 +84,4 @@ class GatedGNNInference(Inference):
                 print('Out: \n', out)
                 print('Target: \n', target)
 
-        # t = "_".join(str(time()).split("."))
-        # self.save_model(t)
+
