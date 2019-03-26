@@ -20,7 +20,23 @@ class BeliefPropagation(Inference):
     LBP need multiple passes until convergene. 
     """
 
-    def run_one(self, graph, smooth=0):
+    def _safe_norm_exp(self, logit):
+        logit -= np.max(logit, axis=1, keepdims=True)
+        prob = np.exp(logit)
+        prob /= prob.sum(axis=1, keepdims=True)
+        return prob 
+
+    def _safe_divide(self, a, b):
+        '''
+        Divies a by b, then turns nans and infs into 0, so all division by 0
+        becomes 0.
+        '''
+        c = a / b
+        c[c == np.inf] = 0.0
+        c = np.nan_to_num(c)
+        return c
+
+    def run_one(self, graph, use_log=True, smooth=0):
         # Asynchronous BP  
         # Sketch of algorithm:
         # -------------------
@@ -34,7 +50,7 @@ class BeliefPropagation(Inference):
         #         - check convergence of messages
 
         if self.mode == "marginal": # not using log
-            sumOp = logsumexp
+            sumOp = logsumexp if use_log else np.sum
         else:
             sumOp = np.max
         # storage, W should be symmetric 
@@ -57,7 +73,10 @@ class BeliefPropagation(Inference):
 
         # init messages based on graph structure (E, 2)
         # messages are ordered (out messages)
-        messages = np.log(np.ones([n_E, 2])/2)  # log
+        messages = np.ones([n_E, 2])/2
+        if use_log:
+            messages = np.log(messages)  # log
+ 
         xij = np.array([[1,-1],[-1,1]])
         xi = np.array([-1, 1])
         for _ in range(max_iters):
@@ -70,19 +89,32 @@ class BeliefPropagation(Inference):
                 Jij = graph.W[i][neighbor] # vector 
                 bi = graph.b[i]            # scalar
                 local_potential = Jij.reshape(-1,1,1)*xij + bi*xi.reshape(-1,1)
+                if not use_log:
+                    local_potential = np.exp(local_potential)
                 # get in messages product (log)
-                in_message_prod = 0
+                in_message_prod = 0 if use_log else 1
                 for j in neighbor:
-                    in_message_prod += messages[index_bases[j]+neighbors[j].index(i)]
+                    if use_log:
+                        in_message_prod += messages[index_bases[j]+neighbors[j].index(i)]
+                    else:
+                        in_message_prod *= messages[index_bases[j]+neighbors[j].index(i)]
 
                 for k in range(degrees[i]):
                     j = neighbor[k]
-                    messages[index_bases[i]+k] = in_message_prod - (messages[index_bases[j]+neighbors[j].index(i)])
+                    if use_log:
+                        messages[index_bases[i]+k] = in_message_prod - \
+                           (messages[index_bases[j]+neighbors[j].index(i)])
+                    else:
+                        messages[index_bases[i]+k] = self._safe_divide(in_message_prod, 
+                           messages[index_bases[j]+neighbors[j].index(i)])                        
                 # update
                 messages[index_bases[i]:index_bases[i]+degrees[i]] = sumOp(messages[index_bases[i]:index_bases[i]+degrees[i]].reshape(degrees[i],2,1) + local_potential, axis=1)
 
             # check convergence 
-            error = (np.exp(messages) - np.exp(old_messages))**2
+            if use_log:
+                error = (self._safe_norm_exp(messages) - self._safe_norm_exp(old_messages))**2
+            else:
+                error = (messages - old_messages)**2
             error = error.mean()
             print(error)
             if error < epsilon: break
@@ -93,16 +125,21 @@ class BeliefPropagation(Inference):
         probs = np.zeros([n_V, 2])
         for i in range(n_V):
             probs[i] = graph.b[i]*xi
+            if not use_log:
+                probs[i] = np.exp(probs[i])
             for j in neighbors[i]:
-                probs[i] += messages[index_bases[j]+neighbors[j].index(i)] 
+                if use_log:
+                    probs[i] += messages[index_bases[j]+neighbors[j].index(i)] 
+                else:
+                    probs[i] *= messages[index_bases[j]+neighbors[j].index(i)] 
 
         # normalize
         if self.mode == 'marginal':
-            # print(probs)
-            probs -= np.max(probs, axis=1, keepdims=True)
-            # print(probs)
-            probs = np.exp(probs)
-            results = probs / probs.sum(axis=1, keepdims=True)
+            if use_log:
+                results = self._safe_norm_exp(probs)
+            else:
+                results = self._safe_divide(probs, probs.sum(axis=1, keepdims=True))
+
 
         if self.mode == 'map':
             results = np.argmax(probs, axis=1)
@@ -111,10 +148,10 @@ class BeliefPropagation(Inference):
         return results
 
 
-    def run(self, graphs):
+    def run(self, graphs, use_log=True):
         res = []
         for graph in graphs:
-            res.append(self.run_one(graph))
+            res.append(self.run_one(graph, use_log=use_log))
         return res
 
 

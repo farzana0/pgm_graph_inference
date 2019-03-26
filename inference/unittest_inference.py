@@ -47,7 +47,7 @@ class TestInference(unittest.TestCase):
     def test_bp(self):
         # BP fails on n=2 and n=3 star (on fully-conn n=3 - ok)
         bp = get_algorithm("bp")("marginal")
-        res = bp.run([self.graph2])
+        res = bp.run([self.graph2], use_log=True)
         print("bp")
         print(res)
 
