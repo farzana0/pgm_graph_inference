@@ -25,7 +25,7 @@ from inference.ggnn_model import GGNN
 class GatedGNNInference(Inference):
     def __init__(self, mode, state_dim, message_dim, 
                 hidden_unit_message_dim, hidden_unit_readout_dim, 
-                n_steps=10, load_path=None, spase=True):
+                n_steps=10, load_path=None, sparse=True):
         Inference.__init__(self, mode)   
         self.mode = mode 
         self.model = GGNN(state_dim, message_dim,

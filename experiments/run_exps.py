@@ -46,7 +46,7 @@ def in_sample_experiment(struct, base_data_dir=DFLT_DATA_DIR, model_base_dir=DFL
     # run inference on test
     gnn_res = gnn_inference.run(test_data, DEVICE)
     bp = get_algorithm("bp")("marginal")
-    bp_res = bp.run(test_data)
+    bp_res = bp.run(test_data, use_log=True, verbose=False)
     mcmc = get_algorithm("mcmc")("marginal")
     mcmc_res = mcmc.run(test_data)
 
@@ -55,23 +55,42 @@ def in_sample_experiment(struct, base_data_dir=DFLT_DATA_DIR, model_base_dir=DFL
     exact_res = exact.run(test_data)
     #--- sanity check ----#
 
-
     # all loaded graphs have ground truth set
-    true_labels = [g.marginal[1] for g in test_data]  # p(x_i=+1)
+    true_labels = []
+    for g in test_data:
+        true_labels.extend(list(m[1] for m in g.marginal))
+
+    print(len(true_labels))
+
+    gnn_labels = []
+    for graph_res in gnn_res:
+        gnn_labels.extend(list(m[1] for m in graph_res))
+
+    bp_labels = []
+    for graph_res in bp_res:
+        bp_labels.extend(list(m[1] for m in graph_res))
+
+    mcmc_labels = []
+    for graph_res in mcmc_res:
+        mcmc_labels.extend(list(m[1] for m in graph_res))
+
+    exact_labels = []
+    for graph_res in exact_res:
+        exact_labels.extend(list(m[1] for m in graph_res))
 
     plt.title("Inference results")
     #fig, axes = plt.subplots(nrows=1, ncols=3)
     f, (ax1, ax2, ax3, ax4) = plt.subplots(1, 4, sharey=True, figsize=(40, 10))
     ax1.set_title("GNN")
-    ax1.scatter(true_labels, [g[1] for g in gnn_res])
+    ax1.scatter(true_labels, gnn_labels)
     ax2.set_title("BP")
-    ax2.scatter(true_labels, [g[1] for g in bp_res])
+    ax2.scatter(true_labels, bp_labels)
     ax3.set_title("MCMC")
-    ax3.scatter(true_labels, [g[1] for g in mcmc_res])
+    ax3.scatter(true_labels, mcmc_labels)
     
     #--- sanity check ----#
     ax4.set_title("Exact (just a sanity check)")
-    ax4.scatter(true_labels, [g[1] for g in exact_res])
+    ax4.scatter(true_labels, exact_labels)
     #--- sanity check ----#
 
     plt.savefig("./experiments/inference_results.png")
@@ -79,5 +98,5 @@ def in_sample_experiment(struct, base_data_dir=DFLT_DATA_DIR, model_base_dir=DFL
 
 
 if __name__ == "__main__":
-    in_sample_experiment(struct="star")
+    in_sample_experiment(struct="path")
 

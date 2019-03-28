@@ -13,7 +13,7 @@ import torch
 import os
 class TestInference(unittest.TestCase):
     def setUp(self):
-        self.graph = construct_binary_mrf("star", n_nodes=5)
+        self.graph = construct_binary_mrf("star", n_nodes=5, shuffle_nodes=False)
         self.graph2 = construct_binary_mrf("fc", n_nodes=5)
 
     def test_exact_probs(self):
@@ -36,14 +36,14 @@ class TestInference(unittest.TestCase):
         # check probs computation
         exact = get_algorithm("exact")("marginal")
         print("exact")
-        print(exact.run([self.graph2]))
+        print(exact.run([self.graph]))
         #exact.reset_mode("map")
         #print(exact.run([self.graph]))
 
     def test_bp(self):
         # BP fails on n=2 and n=3 star (on fully-conn n=3 - ok)
         bp = get_algorithm("bp")("marginal")
-        res = bp.run([self.graph2], use_log=True)
+        res = bp.run([self.graph], use_log=True)
         print("bp")
         print(res)
 

@@ -9,7 +9,7 @@ Authors: lingxiao@cmu.edu
 
 from inference.core import Inference
 import numpy as np 
-from scipy.misc import logsumexp
+from scipy.special import logsumexp
 
 
 class BeliefPropagation(Inference):
@@ -24,7 +24,7 @@ class BeliefPropagation(Inference):
         logit -= np.max(logit, axis=1, keepdims=True)
         prob = np.exp(logit)
         prob /= prob.sum(axis=1, keepdims=True)
-        return prob 
+        return prob
 
     def _safe_divide(self, a, b):
         '''
@@ -49,20 +49,20 @@ class BeliefPropagation(Inference):
         #         - compute outgoing messages to neighbors
         #         - check convergence of messages
 
-        # TODO: check more convergence conditions, like calibration 
-
+        # TODO: check more convergence conditions, like calibration
         if self.mode == "marginal": # not using log
             sumOp = logsumexp if use_log else np.sum
         else:
             sumOp = np.max
         # storage, W should be symmetric 
         max_iters = 100
-        epsilon = 1e-10 # determines when to stop
+        epsilon = 1e-20 # determines when to stop
 
         row, col = np.where(graph.W)
         n_V, n_E = len(graph.b), len(row)
         # create index dict
         degrees = np.sum(graph.W != 0, axis=0)
+        if self.verbose: print(degrees)
         index_bases = np.zeros(n_V, dtype=np.int64)
         for i in range(1, n_V): 
             index_bases[i] = index_bases[i-1] + degrees[i-1]
@@ -82,16 +82,19 @@ class BeliefPropagation(Inference):
         xij = np.array([[1,-1],[-1,1]])
         xi = np.array([-1, 1])
         converged = False
-
         for _ in range(max_iters):
             # save old message for checking convergence
             old_messages = messages.copy()
-            # update messages 
+            # update messages
             for i in ordered_nodes:
+                # print("updating message at", i)
                 neighbor = neighbors[i]
-                Jij = graph.W[i][neighbor] # vector 
+                # print(neighbor)
+                Jij = graph.W[i][neighbor] # vector
                 bi = graph.b[i]            # scalar
+                # print(Jij, bi)
                 local_potential = Jij.reshape(-1,1,1)*xij + bi*xi.reshape(-1,1)
+                # print(local_potential)
                 if not use_log:
                     local_potential = np.exp(local_potential)
                 # get in messages product (log)
@@ -102,6 +105,7 @@ class BeliefPropagation(Inference):
                     else:
                         in_message_prod *= messages[index_bases[j]+neighbors[j].index(i)]
 
+                # messages_ = messages.copy()
                 for k in range(degrees[i]):
                     j = neighbor[k]
                     if use_log:
@@ -112,6 +116,8 @@ class BeliefPropagation(Inference):
                            messages[index_bases[j]+neighbors[j].index(i)])                        
                 # update
                 messages[index_bases[i]:index_bases[i]+degrees[i]] = sumOp(messages[index_bases[i]:index_bases[i]+degrees[i]].reshape(degrees[i],2,1) + local_potential, axis=1)
+            
+            # exit(0)
 
             # check convergence 
             if use_log:
@@ -122,6 +128,7 @@ class BeliefPropagation(Inference):
             if self.verbose: print(error)
             if error < epsilon: 
                 converged = True
+                #print(error)
                 break
 
         if self.verbose: print("Is BP converged: {}".format(converged))
