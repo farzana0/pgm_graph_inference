@@ -49,6 +49,8 @@ class BeliefPropagation(Inference):
         #         - compute outgoing messages to neighbors
         #         - check convergence of messages
 
+        # TODO: check more convergence conditions, like calibration 
+
         if self.mode == "marginal": # not using log
             sumOp = logsumexp if use_log else np.sum
         else:
@@ -73,14 +75,15 @@ class BeliefPropagation(Inference):
 
         # init messages based on graph structure (E, 2)
         # messages are ordered (out messages)
-        messages = np.ones([n_E, 2])/2
+        messages = np.ones([n_E, 2])
         if use_log:
             messages = np.log(messages)  # log
  
         xij = np.array([[1,-1],[-1,1]])
         xi = np.array([-1, 1])
+        converged = False
+
         for _ in range(max_iters):
-            converged = True
             # save old message for checking convergence
             old_messages = messages.copy()
             # update messages 
@@ -117,7 +120,9 @@ class BeliefPropagation(Inference):
                 error = (messages - old_messages)**2
             error = error.mean()
             if self.verbose: print(error)
-            if error < epsilon: break
+            if error < epsilon: 
+                converged = True
+                break
 
         if self.verbose: print("Is BP converged: {}".format(converged))
 
