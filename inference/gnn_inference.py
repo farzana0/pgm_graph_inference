@@ -15,6 +15,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 import torch.optim as optim
+from tqdm import tqdm
 
 # local
 from inference.core import Inference
@@ -22,10 +23,14 @@ from inference.ggnn_model import GGNN
 
 
 class GatedGNNInference(Inference):
-    def __init__(self, mode, n_nodes, state_dim, message_dim, hidden_unit_message_dim, hidden_unit_readout_dim, n_steps=10, load_path=None):
+    def __init__(self, mode, state_dim, message_dim, 
+                hidden_unit_message_dim, hidden_unit_readout_dim, 
+                n_steps=10, load_path=None):
         Inference.__init__(self, mode)   
         self.mode = mode   
-        self.model = GGNN(n_nodes, state_dim, message_dim,hidden_unit_message_dim, hidden_unit_readout_dim, n_steps)
+        self.model = GGNN(state_dim, message_dim,
+                          hidden_unit_message_dim,
+                          hidden_unit_readout_dim, n_steps)
 
         if load_path is not None:
             self.model.load_state_dict(
@@ -35,7 +40,7 @@ class GatedGNNInference(Inference):
                     loc: storage))
             self.model.eval()
 
-    def run(self, graph, device):
+    def run_one(self, graph, device):
         """ Forward computation that depends on the mode """
         # Call to super forward
         # wrap up depending on mode 
@@ -47,10 +52,18 @@ class GatedGNNInference(Inference):
             out = self.model(J,b)
             return out.detach().cpu().numpy()
 
+    def run(self, graphs, device):
+        res = []
+        for graph in graphs:
+            res.append(self.run_one(graph, device))
+        return res
+
     def save_model(self, path):
         torch.save(self.model.state_dict(), path)
 
     def train(self, dataset, optimizer, criterion, device):
+        """ one epoch of training """
+
         #TODO: exact probs need to be in dataset
         # for i, graph,probs in enumerate(dataset,0):
         self.model.to(device)
@@ -58,10 +71,10 @@ class GatedGNNInference(Inference):
         self.model.zero_grad()
 
         batch_loss=[]
-        for i, graph in enumerate(dataset):
+        for i, graph in tqdm(enumerate(dataset)):
             b = torch.from_numpy(graph.b).float().to(device)
             J = torch.from_numpy(graph.W).float().to(device)
-            target =torch.from_numpy(graph.marginal).float().to(device)
+            target = torch.from_numpy(graph.marginal).float().to(device)
             out = self.model(J,b)
             # loss = criterion(torch.log(out[:,0]), target[:,0])
             # test = criterion(torch.log(torch.tensor([0.4,0.4,0.5])),torch.tensor([0.4,0.4,0.5]))
@@ -79,9 +92,9 @@ class GatedGNNInference(Inference):
                 optimizer.step()
                 self.model.zero_grad()
                 batch_loss=[]
-                print(i)
-                print('loss', ll_mean.item())
-                print('Out: \n', out)
-                print('Target: \n', target)
+                # print(i)
+                # print('loss', ll_mean.item())
+                # print('Out: \n', out)
+                # print('Target: \n', target)
 
 

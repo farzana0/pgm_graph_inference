@@ -7,11 +7,12 @@ import torch
 import torch.nn as nn
 
 class GGNN(nn.Module):
-    def __init__(self, n_nodes, state_dim, message_dim,hidden_unit_message_dim, hidden_unit_readout_dim, n_steps=10):
+    def __init__(self, state_dim, message_dim,
+                 hidden_unit_message_dim,
+                 hidden_unit_readout_dim, n_steps=10):
         super(GGNN, self).__init__()
 
         self.state_dim = state_dim
-        self.n_nodes = n_nodes
         self.n_steps = n_steps
         self.message_dim = message_dim
         self.hidden_unit_message_dim = hidden_unit_message_dim
@@ -46,13 +47,14 @@ class GGNN(nn.Module):
 
 
     # unbatch version for debugging
-    def forward(self, J,b):
-        readout = torch.zeros(self.n_nodes)
-        hidden_states = torch.zeros(self.n_nodes,self.state_dim)
-        message_i_j = torch.zeros(self.n_nodes, self.n_nodes, self.message_dim)
+    def forward(self, J, b):
+        n_nodes = len(J)
+        readout = torch.zeros(n_nodes)
+        hidden_states = torch.zeros(n_nodes, self.state_dim)
+        message_i_j = torch.zeros(n_nodes, n_nodes, self.message_dim)
         for step in range(self.n_steps):
-            for i in range(self.n_nodes):
-                for j in range(self.n_nodes):
+            for i in range(n_nodes):
+                for j in range(n_nodes):
                     message_in = torch.cat([hidden_states[i,:],hidden_states[j,:],J[i,j].unsqueeze(0),b[i].unsqueeze(0),b[j].unsqueeze(0)])
                     message_i_j[i,j,:] = self.message_passing(message_in)
 

@@ -116,10 +116,10 @@ class BeliefPropagation(Inference):
             else:
                 error = (messages - old_messages)**2
             error = error.mean()
-            print(error)
+            if self.verbose: print(error)
             if error < epsilon: break
 
-        print("Is BP converged: {}".format(converged))
+        if self.verbose: print("Is BP converged: {}".format(converged))
 
         # calculate marginal or map
         probs = np.zeros([n_V, 2])
@@ -148,7 +148,8 @@ class BeliefPropagation(Inference):
         return results
 
 
-    def run(self, graphs, use_log=True):
+    def run(self, graphs, use_log=True, verbose=False):
+        self.verbose = verbose
         res = []
         for graph in graphs:
             res.append(self.run_one(graph, use_log=use_log))

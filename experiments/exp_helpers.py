@@ -11,9 +11,12 @@ import os
 import numpy as np
 
 from graphical_models import BinaryMRF
+from inference import get_algorithm
+from constants import *
 
-data_dir = "./graphical_models/datasets"
+
 # Give specs in form structure->size
+# when used for train, the same is model name
 data_specs = {
     "debug": 
             {"star": [5],
@@ -21,27 +24,28 @@ data_specs = {
     "larger_debug": 
             {"star": [10],
               "fc":   []},
-    "debug_test":
-            {"star": [5],
-              "fc":   []}
+    "star_small":
+            {"star": [9]},
+    "path_small":
+            {"path": [9]},
+    "fc_small":
+            {"fc": [9]}
 }
 
 
 # Data loading ----------------------------------------------------------------
-def get_dataset_by_name(specs_name, 
-    data_dir="./graphical_models/datasets/"):
+def get_dataset_by_name(specs_name, data_dir):
     """
     Assumes graphs live as
-    graphical_models/datasets/
-        |-- star/
-        |    |-  9/<file1.npy>, <file2.npy> ...
-        |    |- 10/
-             |- 11/
-       ...  ...
+    graphical_models/datasets/{train/val/test}  <-- data_dir
+                                    |-- star/
+                                    |    |-  9/<file1.npy>, <file2.npy> ...
+                                    |    |- 10/
+                                         |- 11/
+                                   ...  ...
     Loads all graphs of given size and structure,
     this needs to be updated in the future
     (so that we can train and test on the same structures).
-
     """
     if specs_name not in data_specs:
         raise ValueError("Specification {} not supported".format(exp_name))
@@ -64,22 +68,6 @@ def get_dataset_by_name(specs_name,
 
     print("Loaded {} graphs".format(len(graphs)))
     return graphs
-
-# Train-test pairs ------------------------------------------------------------
-def dummy_experiment():
-    """ Just for an example """
-
-    # TODO: how to organize t/t splitting?
-    train_specs_name = "debug"
-    test_specs_name = "debug"
-
-    train_data = get_dataset_by_name(train_specs_name)
-    test_data = get_dataset_by_name(test_specs_name)
-
-    # load the model with train_specs_name postfix from inference/pretrained
-    # TODO: gnn = 
-
-    # TODO: check accuracy of different types of inference
 
 
 # Some simple checks ----------------------------------------------------------

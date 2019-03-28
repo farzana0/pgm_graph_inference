@@ -1,0 +1,29 @@
+Experiment specifications:
+
+1) In-sample Experiments:
+{star, path, fc}_small (train), 1300 graphs -> {star, path, fc}_small (test) 130 graphs, model_name {star, path, fc}_small
+
+2) Out-of-sample Experiments:
+TBA
+
+---
+
+You should be able to run 
+
+```bash
+create_data.py --data_mode {train,val,test} [other settings for datasets' names]
+```
+
+(several times until all datasets required by dict from exp_helpers are generated), and then
+
+```bash
+train.py --train_set_name [...] --mode [...]
+```
+
+and
+
+```bash
+./experiments/experiments.py [TODO: arguments]
+```
+
+(Maybe I will make a bash runner for all of this.)

@@ -19,18 +19,25 @@ from inference import get_algorithm
 
 def parse_dataset_args():
     parser = argparse.ArgumentParser()
-    # TODO: options
+
+    # crucial arguments
     parser.add_argument('--graph_struct', default="star", type=str,
                         help='type of graph structure, such as star or fc')
     parser.add_argument('--size_range', default="5_5", type=str,
                         help='range of sizes, in the form "10_20"')
     parser.add_argument('--num', default=1, type=int,
                         help='number of graphs to generate')
-    parser.add_argument('--algo', default='exact', type=str,
-                        help='algorithm to use for labeling')
+    # should be used for train-test split
+    parser.add_argument('--data_mode', default='train',
+                        type=str, help='use train/val/test subdirectory of base_data_dir')
+
     parser.add_argument('--mode', default='marginal', type=str,
                         help='type of inference to perform')
-    parser.add_argument('--data_dir', default='./graphical_models/datasets/',
+    parser.add_argument('--algo', default='exact', type=str,
+                        help='algorithm to use for labeling')
+
+    # no need to change the following arguments
+    parser.add_argument('--base_data_dir', default='./graphical_models/datasets/',
                         type=str, help='directory to save a generated dataset')
     parser.add_argument('--verbose', default=False, type=bool,
                         help='whether to display dataset statistics')
@@ -44,7 +51,7 @@ if __name__=="__main__":
     low, high = args.size_range.split("_")
     size_range = np.arange(int(low), int(high)+1)
     ## construct graphical models
-    
+
     graphs = []
     for _ in range(args.num):
         # sample n_nodes from range
@@ -63,7 +70,8 @@ if __name__=="__main__":
         else:
             res_marginal, res_map = None, res
 
-        directory = os.path.join(args.data_dir, graph.struct, str(graph.n_nodes))
+        directory = os.path.join(args.base_data_dir, args.data_mode,
+                                 graph.struct, str(graph.n_nodes))
         os.makedirs(directory, exist_ok=True)
         data = {"W": graph.W, "b": graph.b,
                 "marginal": res_marginal, "map": res_map}
