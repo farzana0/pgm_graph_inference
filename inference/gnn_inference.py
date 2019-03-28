@@ -17,24 +17,24 @@ import numpy as np
 import torch.optim as optim
 from tqdm import tqdm
 
-# local
 from inference.core import Inference
-from constants import USE_SPARSE_GNN
-if USE_SPARSE_GNN:
-    from inference.ggnn_model_sparse import GGNN
-else:
-    from inference.ggnn_model import GGNN
+from inference.ggnn_model_sparse import GGNN as GGNN_sparse
+from inference.ggnn_model import GGNN
 
 
 class GatedGNNInference(Inference):
     def __init__(self, mode, state_dim, message_dim, 
                 hidden_unit_message_dim, hidden_unit_readout_dim, 
-                n_steps=10, load_path=None):
+                n_steps=10, load_path=None, spase=True):
         Inference.__init__(self, mode)   
-        self.mode = mode   
+        self.mode = mode 
         self.model = GGNN(state_dim, message_dim,
-                          hidden_unit_message_dim,
-                          hidden_unit_readout_dim, n_steps)
+                  hidden_unit_message_dim,
+                  hidden_unit_readout_dim, n_steps) 
+        if sparse:
+            self.model = GGNN_sparse(state_dim, message_dim,
+                      hidden_unit_message_dim,
+                      hidden_unit_readout_dim, n_steps) 
 
         if load_path is not None:
             self.model.load_state_dict(

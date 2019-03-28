@@ -91,18 +91,15 @@ class GGNN(nn.Module):
         n_nodes = len(J)
         readout = torch.zeros(n_nodes)
         hidden_states = torch.zeros(n_nodes, self.state_dim).to(J.device)
-        # TODO: change to sparse matrix
+
         row, col = torch.nonzero(J).t()
         edges = torch.nonzero(J.unsqueeze(-1).expand(-1, -1, self.message_dim).permute(2,0,1)).t()# (dim2*dim0*dim1) 
-        # print(torch.nonzero(J).t())
-        # print(edges)
         
         for step in range(self.n_steps):
             # (dim0*dim1, dim2)
             edge_messages = torch.cat([hidden_states[row,:], hidden_states[col,:],J[row,col].unsqueeze(-1),b[row].unsqueeze(-1),b[col].unsqueeze(-1)], dim=-1)
             edge_messages = self.message_passing(edge_messages).t().reshape(-1) # in message, (dim2*dim0*dim1)
-            node_messages = self.spmm(edges, edge_messages, torch.Size([self.message_dim, n_nodes, n_nodes]), 
-                                      torch.ones(size=(n_nodes,1)).to(J.device)) # (dim0, dim2)
+            node_messages = self.spmm(edges, edge_messages, torch.Size([self.message_dim, n_nodes, n_nodes]), torch.ones(size=(n_nodes,1)).to(J.device)) # (dim0, dim2)
             hidden_states = self.propagator(node_messages, hidden_states) 
 
         readout = self.readout(hidden_states)

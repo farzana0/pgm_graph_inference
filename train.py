@@ -67,7 +67,7 @@ if __name__ == "__main__":
     gnn_constructor = get_algorithm("gnn_inference")
     gnn_inference = gnn_constructor('marginal', n_hidden_states, 
                                     message_dim_P,hidden_unit_message_dim,
-                                    hidden_unit_readout_dim, T)
+                                    hidden_unit_readout_dim, T, sparse=USE_SPARSE_GNN)
     optimizer = Adam(gnn_inference.model.parameters(), lr=learning_rate)
 
     criterion = nn.KLDivLoss()

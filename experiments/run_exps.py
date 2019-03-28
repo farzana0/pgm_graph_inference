@@ -41,7 +41,7 @@ def in_sample_experiment(struct, base_data_dir=DFLT_DATA_DIR, model_base_dir=DFL
     gnn_inference = gnn_constructor("marginal", n_hidden_states, 
                                     message_dim_P,hidden_unit_message_dim,
                                     hidden_unit_readout_dim, T,
-                                    model_load_path)
+                                    model_load_path, USE_SPARSE_GNN)
 
     # run inference on test
     gnn_res = gnn_inference.run(test_data, DEVICE)
