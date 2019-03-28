@@ -1,6 +1,7 @@
 """
 Defines GGNN model based on the PGM by GNN workshop paper.
-Authors: kkorovin@cs.cmu.edu, markcheu@andrew.cmu.edu
+Authors: markcheu@andrew.cmu.edu, kkorovin@cs.cmu.edu
+
 """
 
 import torch

@@ -2,7 +2,7 @@
 
 Defines GNNInference objects: models that perform
 inference, given a graphical model.
-Authors: kkorovin@cs.cmu.edu, markcheu@andrew.cmu.edu
+Authors: markcheu@andrew.cmu.edu, kkorovin@cs.cmu.edu
 
 Options:
 - Gated Graph neural network:
@@ -19,7 +19,11 @@ from tqdm import tqdm
 
 # local
 from inference.core import Inference
-from inference.ggnn_model import GGNN
+from constants import USE_SPARSE_GNN
+if USE_SPARSE_GNN:
+    from inference.ggnn_model_sparse import GGNN
+else:
+    from inference.ggnn_model import GGNN
 
 
 class GatedGNNInference(Inference):

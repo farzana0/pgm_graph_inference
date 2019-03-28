@@ -1,7 +1,7 @@
 """
 
 Data creation helpers and action.
-Authors: kkorovin@cs.cmu.edu (main)
+Authors: kkorovin@cs.cmu.edu
 
 TODO:
 * add random seeds

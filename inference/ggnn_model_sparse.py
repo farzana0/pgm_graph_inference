@@ -1,13 +1,13 @@
 """
 Defines GGNN model based on the PGM by GNN workshop paper.
-Authors: kkorovin@cs.cmu.edu, markcheu@andrew.cmu.edu, lingxiao@cmu.edu
+Authors: markcheu@andrew.cmu.edu, lingxiao@cmu.edu, kkorovin@cs.cmu.edu
 """
 
 import torch
 import torch.nn as nn
 
 class SpecialSpmmFunction(torch.autograd.Function):
-    """Special function for only sparse region backpropataion layer."""
+    """Special function for only sparse region backpropagation layer."""
     @staticmethod
     def forward(ctx, indices, values, shape, b):
         assert indices.requires_grad == False
@@ -49,11 +49,10 @@ class Special3dSpmm(nn.Module):
 
 
 class GGNN(nn.Module):
-    def __init__(self, n_nodes, state_dim, message_dim,hidden_unit_message_dim, hidden_unit_readout_dim, n_steps=10):
+    def __init__(self, state_dim, message_dim,hidden_unit_message_dim, hidden_unit_readout_dim, n_steps=10):
         super(GGNN, self).__init__()
 
         self.state_dim = state_dim
-        self.n_nodes = n_nodes
         self.n_steps = n_steps
         self.message_dim = message_dim
         self.hidden_unit_message_dim = hidden_unit_message_dim
@@ -75,7 +74,7 @@ class GGNN(nn.Module):
             nn.ReLU(),
             nn.Linear(self.hidden_unit_readout_dim, 2),
         )
-        
+
         self.sigmoid = nn.Sigmoid()
         self.spmm = Special3dSpmm()
         self._initialization()
@@ -89,8 +88,9 @@ class GGNN(nn.Module):
 
     # unbatch version for debugging
     def forward(self, J, b):
-        readout = torch.zeros(self.n_nodes)
-        hidden_states = torch.zeros(self.n_nodes, self.state_dim).to(J.device)
+        n_nodes = len(J)
+        readout = torch.zeros(n_nodes)
+        hidden_states = torch.zeros(n_nodes, self.state_dim).to(J.device)
         # TODO: change to sparse matrix
         row, col = torch.nonzero(J).t()
         edges = torch.nonzero(J.unsqueeze(-1).expand(-1, -1, self.message_dim).permute(2,0,1)).t()# (dim2*dim0*dim1) 
@@ -101,8 +101,8 @@ class GGNN(nn.Module):
             # (dim0*dim1, dim2)
             edge_messages = torch.cat([hidden_states[row,:], hidden_states[col,:],J[row,col].unsqueeze(-1),b[row].unsqueeze(-1),b[col].unsqueeze(-1)], dim=-1)
             edge_messages = self.message_passing(edge_messages).t().reshape(-1) # in message, (dim2*dim0*dim1)
-            node_messages = self.spmm(edges, edge_messages, torch.Size([self.message_dim, self.n_nodes, self.n_nodes]), 
-                                      torch.ones(size=(self.n_nodes,1)).cuda()) # (dim0, dim2)
+            node_messages = self.spmm(edges, edge_messages, torch.Size([self.message_dim, n_nodes, n_nodes]), 
+                                      torch.ones(size=(n_nodes,1)).to(J.device)) # (dim0, dim2)
             hidden_states = self.propagator(node_messages, hidden_states) 
 
         readout = self.readout(hidden_states)

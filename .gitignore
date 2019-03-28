@@ -2,6 +2,7 @@ papers/
 **/__pycache__
 graphical_models/datasets/
 inference/pretrained/
-
+.ipynb*
 .DS_Store
 *.ipynb
+**/*.png

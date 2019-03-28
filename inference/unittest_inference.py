@@ -3,10 +3,6 @@
 Unit tests for inference objects
 Authors: kkorovin@cs.cmu.edu
 
-TODO:
-* There is a large mismatch between MCMC and exact on this example
-  find what is going wrong.
-
 """
 import numpy as np
 import unittest

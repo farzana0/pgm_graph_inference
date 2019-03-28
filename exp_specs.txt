@@ -26,4 +26,12 @@ and
 ./experiments/experiments.py [TODO: arguments]
 ```
 
+---
+
+For example, to run an in-sample star_small experiment, do:
+python create_data.py --graph_struct star --size_range 9_9 --num 1300 --data_mode train;
+python create_data.py --graph_struct star --size_range 9_9 --num 1300 --data_mode test;
+python train.py --train_set_name star_small;
+python experiments/run_exps.py;
+
 (Maybe I will make a bash runner for all of this.)
