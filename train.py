@@ -14,6 +14,7 @@ from time import time
 import torch
 import torch.nn as nn
 from torch.optim import Adam
+import matplotlib.pyplot as plt
 
 from experiments.exp_helpers import get_dataset_by_name
 from inference import get_algorithm
@@ -84,4 +85,9 @@ if __name__ == "__main__":
         gnn_inference.save_model(model_path)
 
     print("Model saved in {}".format(model_path))
+
+    losses = gnn_inference.history["loss"]
+    plt.plot(range(1, len(losses)+1), losses)
+    plt.savefig(os.path.join(args.model_dir, "training_hist_{}".format(args.train_set_name)))
+
 

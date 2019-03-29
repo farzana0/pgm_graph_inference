@@ -26,8 +26,7 @@ class GatedGNNInference(Inference):
     def __init__(self, mode, state_dim, message_dim, 
                 hidden_unit_message_dim, hidden_unit_readout_dim, 
                 n_steps=10, load_path=None, sparse=True):
-        Inference.__init__(self, mode)   
-        self.mode = mode 
+        Inference.__init__(self, mode)
         self.model = GGNN(state_dim, message_dim,
                   hidden_unit_message_dim,
                   hidden_unit_readout_dim, n_steps) 
@@ -43,6 +42,7 @@ class GatedGNNInference(Inference):
                     map_location=lambda storage,
                     loc: storage))
             self.model.eval()
+        self.history = {"loss": []}
 
     def run_one(self, graph, device):
         """ Forward computation that depends on the mode """
@@ -75,6 +75,8 @@ class GatedGNNInference(Inference):
         self.model.zero_grad()
 
         batch_loss=[]
+        mean_losses = []
+
         for i, graph in tqdm(enumerate(dataset)):
             b = torch.from_numpy(graph.b).float().to(device)
             J = torch.from_numpy(graph.W).float().to(device)
@@ -83,11 +85,7 @@ class GatedGNNInference(Inference):
             # loss = criterion(torch.log(out[:,0]), target[:,0])
             # test = criterion(torch.log(torch.tensor([0.4,0.4,0.5])),torch.tensor([0.4,0.4,0.5]))
             # print(test)
-            loss = criterion(torch.log(out), target)
-
-            # loss.backward()
-            # optimizer.step()
-            # self.model.zero_grad()            
+            loss = criterion(torch.log(out), target)        
             batch_loss.append(loss)
 
             if(i%50==0):
@@ -96,9 +94,7 @@ class GatedGNNInference(Inference):
                 optimizer.step()
                 self.model.zero_grad()
                 batch_loss=[]
-                # print(i)
-                # print('loss', ll_mean.item())
-                # print('Out: \n', out)
-                # print('Target: \n', target)
+                mean_losses.append(ll_mean.item())
 
+        self.history["loss"].append(np.mean(mean_losses))
 

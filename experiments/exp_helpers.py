@@ -12,6 +12,7 @@ import numpy as np
 
 from graphical_models import BinaryMRF
 from inference import get_algorithm
+from graphical_models.data_gen import struct_names
 from constants import *
 
 
@@ -24,13 +25,21 @@ data_specs = {
     "larger_debug": 
             {"star": [10],
               "fc":   []},
-    "star_small":
-            {"star": [9]},
-    "path_small":
-            {"path": [9]},
-    "fc_small":
-            {"fc": [9]}
 }
+
+# add simple datasets
+data_specs.update({struct+"_small": {struct: [9]} for struct in struct_names})
+assert "star_small" in data_specs
+
+# add compound datasets
+data_specs.update({"trees_medium": {"star": [15, 16, 17],
+                                    "path": [15, 16, 17],
+                                    },
+                    "conn_medium": {"bipart": [15, 16, 17],
+                                    "tripart": [15, 16, 17],
+                                    "fc": [15, 16, 17],
+                                    },
+                  })
 
 
 # Data loading ----------------------------------------------------------------
