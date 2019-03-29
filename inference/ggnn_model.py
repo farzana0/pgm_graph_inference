@@ -36,7 +36,8 @@ class GGNN(nn.Module):
             nn.Linear(self.hidden_unit_readout_dim, 2),
         )
         
-        self.sigmoid = nn.Sigmoid()
+        # self.sigmoid = nn.Sigmoid()
+        self.softmax = nn.Softmax(dim=1)
         self._initialization()
 
 
@@ -50,7 +51,6 @@ class GGNN(nn.Module):
     # unbatch version for debugging
     def forward(self, J, b):
         n_nodes = len(J)
-        readout = torch.zeros(n_nodes)
         hidden_states = torch.zeros(n_nodes, self.state_dim)
         message_i_j = torch.zeros(n_nodes, n_nodes, self.message_dim)
         for step in range(self.n_steps):
@@ -63,6 +63,7 @@ class GGNN(nn.Module):
             hidden_states = self.propagator(message_i,hidden_states)
 
         readout = self.readout(hidden_states)
-        readout = self.sigmoid(readout)
-        readout = readout / torch.sum(readout,1).view(-1,1)
+        readout = self.softmax(readout)
+        #readout = self.sigmoid(readout)
+        #readout = readout / torch.sum(readout,1).view(-1,1)
         return readout

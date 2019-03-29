@@ -41,10 +41,12 @@ data_specs.update({"trees_medium": {"star": [15, 16, 17],
                                     "fc": [15, 16, 17],
                                     },
                   })
-
+data_specs.update({"path_large": {"path":  [25]},
+                  "fc_large": {"fc": [25]}
+                 })
 
 # Data loading ----------------------------------------------------------------
-def get_dataset_by_name(specs_name, data_dir):
+def get_dataset_by_name(specs_name, data_dir, mode=None):
     """
     Assumes graphs live as
     graphical_models/datasets/{train/val/test}  <-- data_dir
@@ -55,7 +57,12 @@ def get_dataset_by_name(specs_name, data_dir):
                                    ...  ...
     Loads all graphs of given size and structure,
     this needs to be updated in the future
-    (so that we can train and test on the same structures).
+    (so that we can train and test on the same structures)
+
+    Arguments:
+        specs_name - key to the data_specs dictionary
+        data_dir - train or test directory
+        mode - map or marginal
     """
     if specs_name not in data_specs:
         raise ValueError("Specification {} not supported".format(exp_name))
@@ -76,6 +83,8 @@ def get_dataset_by_name(specs_name, data_dir):
                                            map_est=data_dict["map"])
                     graphs.append(graph)
 
+    if mode is not None:
+        graphs = [g for g in graphs if getattr(g, mode) is not None]
     print("Loaded {} graphs".format(len(graphs)))
     return graphs
 

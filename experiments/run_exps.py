@@ -9,6 +9,7 @@ TODO: need to match GNN parameters with those in train.py
 
 import os
 from time import time
+import numpy as np
 import matplotlib.pyplot as plt
 
 font = {'family' : 'normal',
@@ -36,27 +37,32 @@ def out_of_sample_experiment(struct):
     test_set_name = struct + "_medium" # "conn_medium", "trees_medium"
     run_experiment(train_set_name, test_set_name)
 
-def upscaling_experiment(train_set_name, test_set_name):
+def upscaling_experiment(struct):
     """ trainset here combines a few structures,
         testset is increasingly large 
     """
+    train_set_name = struct + "_small"
+    test_set_name  = struct + "_large"
     run_experiment(train_set_name, test_set_name)
 
+def in_sample_experiment_map(struct):
+    train_set_name = struct + "_small"
+    test_set_name  = struct + "_small"
+    run_experiment(train_set_name, test_set_name, "map")
 
 # Runner ----------------------------------------------------------------------
 
-def run_experiment(train_set_name, test_set_name, base_data_dir=DFLT_DATA_DIR, model_base_dir=DFLT_MODEL_DIR):
+def run_experiment(train_set_name, test_set_name, inference_mode="marginal",
+                   base_data_dir=DFLT_DATA_DIR, model_base_dir=DFLT_MODEL_DIR):
     """
     tests for in-sample (same structure, same size, marginals)
     """
-    inference_mode = "map"  # "marginal"
-
     train_path = os.path.join(base_data_dir, "train")
     test_path = os.path.join(base_data_dir, "test")
     model_load_path =os.path.join(model_base_dir, train_set_name)
 
     # train_data = get_dataset_by_name(train_set_name, train_path)
-    test_data  = get_dataset_by_name(test_set_name, test_path)
+    test_data  = get_dataset_by_name(test_set_name, test_path, mode=inference_mode)
  
     # load model
     n_hidden_states = 5
@@ -131,27 +137,30 @@ def run_experiment(train_set_name, test_set_name, base_data_dir=DFLT_DATA_DIR, m
         #ax4.scatter(true_labels, exact_labels)
         #--- sanity check ----#
         plt.savefig("./experiments/res_{}_{}.png".format(train_set_name, test_set_name))
-    
+
     # MAP: only numeric
     else:
         true_labels = []
         for g in test_data:
             true_labels.extend(g.map)
+        true_labels = np.array(true_labels)
 
         gnn_labels = []
         for graph_res in gnn_res:
-            gnn_labels.extend(list(-1 if m[0]<m[1] else +1 for m in graph_res))
-        #print(gnn_labels[:3])
+            gnn_labels.extend(list(-1 if m[0]>m[1] else +1 for m in graph_res))
+        gnn_labels = np.array(gnn_labels)
         gnn_accuracy = np.mean(true_labels == gnn_labels)
 
         bp_labels = []
         for graph_res in bp_res:
             bp_labels.extend(graph_res)
+        bp_labels = np.array(bp_labels)
         bp_accuracy = np.mean(true_labels == bp_labels)
 
         mcmc_labels = []
         for graph_res in mcmc_res:
             mcmc_labels.extend(graph_res)
+        mcmc_labels = np.array(mcmc_labels)
         mcmc_accuracy = np.mean(true_labels == mcmc_labels)
 
         print("Accuracies: GNN {}, BP {}, MCMC {}".format(gnn_accuracy, bp_accuracy, mcmc_accuracy))
@@ -160,6 +169,8 @@ def run_experiment(train_set_name, test_set_name, base_data_dir=DFLT_DATA_DIR, m
 
 
 if __name__ == "__main__":
-    in_sample_experiment(struct="path")
+    # in_sample_experiment(struct="path")
     # out_of_sample_experiment("bipart")
+    # upscaling_experiment("fc")
+    in_sample_experiment_map(struct="path")
 

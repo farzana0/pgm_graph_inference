@@ -74,18 +74,22 @@ class GatedGNNInference(Inference):
         self.model.train()
         self.model.zero_grad()
 
-        batch_loss=[]
+        batch_loss = []
         mean_losses = []
 
         for i, graph in tqdm(enumerate(dataset)):
             b = torch.from_numpy(graph.b).float().to(device)
             J = torch.from_numpy(graph.W).float().to(device)
-            target = torch.from_numpy(graph.marginal).float().to(device)
             out = self.model(J,b)
-            # loss = criterion(torch.log(out[:,0]), target[:,0])
-            # test = criterion(torch.log(torch.tensor([0.4,0.4,0.5])),torch.tensor([0.4,0.4,0.5]))
-            # print(test)
-            loss = criterion(torch.log(out), target)        
+
+            if self.mode == "marginal":
+                target = torch.from_numpy(graph.marginal).float().to(device)
+                loss = criterion(torch.log(out), target)
+            else:
+                map_bin = np.where(graph.map > 0.1, 1, 0)
+                target = torch.from_numpy(map_bin).float().to(device)
+                loss = criterion(out[:, 1], target)  # bce
+
             batch_loss.append(loss)
 
             if(i%50==0):

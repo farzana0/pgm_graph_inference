@@ -8,7 +8,7 @@ Authors: kkorovin@cs.cmu.edu
 import numpy as np
 import itertools
 from inference.core import Inference
-
+from tqdm import tqdm
 
 class ExactInference(Inference):
     """ Special case BinaryMRF implementation """
@@ -49,6 +49,6 @@ class ExactInference(Inference):
 
     def run(self, graphs):
         res = []
-        for graph in graphs:
+        for graph in tqdm(graphs):
             res.append(self.run_one(graph))
         return res

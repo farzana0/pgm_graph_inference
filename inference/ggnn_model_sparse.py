@@ -75,7 +75,8 @@ class GGNN(nn.Module):
             nn.Linear(self.hidden_unit_readout_dim, 2),
         )
 
-        self.sigmoid = nn.Sigmoid()
+        #self.sigmoid = nn.Sigmoid()
+        self.softmax = nn.Softmax(dim=1)
         self.spmm = Special3dSpmm()
         self._initialization()
 
@@ -103,6 +104,7 @@ class GGNN(nn.Module):
             hidden_states = self.propagator(node_messages, hidden_states) 
 
         readout = self.readout(hidden_states)
-        readout = self.sigmoid(readout)
-        readout = readout / torch.sum(readout,1).view(-1,1)
+        readout = self.softmax(readout)
+        # readout = self.sigmoid(readout)
+        # readout = readout / torch.sum(readout,1).view(-1,1)
         return readout

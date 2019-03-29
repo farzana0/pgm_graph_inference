@@ -52,7 +52,13 @@ if __name__ == "__main__":
     print("Training a model `{}` on training dataset `{}`".format(args.model_name,
                                                                   args.train_set_name))
 
-    dataset = get_dataset_by_name(args.train_set_name, args.data_dir)
+    dataset = get_dataset_by_name(args.train_set_name, args.data_dir, 
+                                  mode=args.mode)
+    # # filter by mode:
+    # if args.mode =="marginal":
+    #     dataset = [g for g in dataset if g.marginal is not None]
+    # elif args.mode == "map":
+    #     dataset = [g for g in dataset if g.map is not None]
 
     # GGNN parmeters
     n_hidden_states = 5
@@ -66,12 +72,15 @@ if __name__ == "__main__":
     epochs = args.epochs
 
     gnn_constructor = get_algorithm("gnn_inference")
-    gnn_inference = gnn_constructor('marginal', n_hidden_states, 
+    gnn_inference = gnn_constructor(args.mode, n_hidden_states, 
                                     message_dim_P,hidden_unit_message_dim,
                                     hidden_unit_readout_dim, T, sparse=USE_SPARSE_GNN)
     optimizer = Adam(gnn_inference.model.parameters(), lr=learning_rate)
 
-    criterion = nn.KLDivLoss()
+    if args.mode == "marginal":
+        criterion = nn.KLDivLoss()
+    else:
+        criterion = nn.BCELoss()
     # criterion = nn.MSELoss()
 
     for epoch in range(epochs):
