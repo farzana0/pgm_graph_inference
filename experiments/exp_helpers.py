@@ -32,11 +32,12 @@ data_specs.update({struct+"_small": {struct: [9]} for struct in struct_names})
 assert "star_small" in data_specs
 
 # add compound datasets
+data_specs.update({struct+"_medium": {struct: [15,16,17]} for struct in struct_names})
 data_specs.update({"trees_medium": {"star": [15, 16, 17],
                                     "path": [15, 16, 17],
                                     },
                     "conn_medium": {"bipart": [15, 16, 17],
-                                    "tripart": [15, 16, 17],
+                                    # "tripart": [15, 16, 17],
                                     "fc": [15, 16, 17],
                                     },
                   })

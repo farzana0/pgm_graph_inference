@@ -124,7 +124,12 @@ class BeliefPropagation(Inference):
                 error = (self._safe_norm_exp(messages) - self._safe_norm_exp(old_messages))**2
             else:
                 error = (messages - old_messages)**2
-            error = error.mean()
+            
+            if len(error):
+                error = error.mean()
+            else:
+                error = 0.
+
             if self.verbose: print(error)
             if error < epsilon: 
                 converged = True

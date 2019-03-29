@@ -8,8 +8,11 @@ TODO:
   (some sources suggest temperature in MH)
 """
 
-from inference.core import Inference
+from collections import Counter
 import numpy as np
+
+from inference.core import Inference
+
 
 class GibbsSampling(Inference):
     """Gibbs sampling for binaryMRF.
@@ -58,8 +61,9 @@ class GibbsSampling(Inference):
                 assert neg_pos.shape == (graph.n_nodes, 2)
                 res.append(neg_pos)
             elif self.mode == "map":
-                # TODO
-                pass
+                cnt = Counter([tuple(row) for row in samples])
+                most_freq = cnt.most_common(1)[0][0]
+                res.append(most_freq)
         return res
 
 
@@ -77,3 +81,4 @@ if __name__ == '__main__':
     graphs = [BinaryMRF(W, u)]
     samples = gibs.collect_samples(graphs, 100)
     print(samples[0])
+

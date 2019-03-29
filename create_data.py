@@ -3,6 +3,9 @@
 Data creation helpers and action.
 Authors: kkorovin@cs.cmu.edu
 
+If variable size range is supplied, each
+generated graph has randomly chosen size in range.
+
 TODO:
 * add random seeds
 """
