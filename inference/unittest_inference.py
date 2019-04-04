@@ -47,6 +47,13 @@ class TestInference(unittest.TestCase):
         print("bp")
         print(res)
 
+    def test_bp_nonsparse(self):
+        # BP fails on n=2 and n=3 star (on fully-conn n=3 - ok)
+        bp = get_algorithm("bp_nonsparse")("marginal")
+        res = bp.run([self.graph], use_log=True)
+        print("bp nonsparse")
+        print(res)
+
     def test_mcmc(self):
         mcmc = get_algorithm("mcmc")("marginal")
         res = mcmc.run([self.graph2])
