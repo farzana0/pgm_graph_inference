@@ -58,9 +58,9 @@ class BeliefPropagation_nonsparse(Inference):
         epsilon = 1e-10 # determines when to stop
 
         n_nodes = graph.W.shape[0]
-        messages = np.ones((n_nodes,n_nodes,2))
+        messages = np.zeros((n_nodes,n_nodes,2))
         x_potential = np.array([-1,1])
-        for _ in range(max_iters):
+        for iter in range(max_iters):
             converged = True
             # save old message for checking convergence
             old_messages = messages.copy()
@@ -72,26 +72,26 @@ class BeliefPropagation_nonsparse(Inference):
                             s = 0
                             for x_i in range(2):
                                 log_sum = graph.W[i,j]*x_potential[x_i]*x_potential[x_j]+graph.b[x_i]*x_potential[x_i]
-                                for m in range(n_nodes):
-                                    if (graph.W[i,m]!=0 and m!=j):
-                                        log_sum+=messages[m,i,x_i]
+                                for k in range(n_nodes):
+                                    if (graph.W[i,k]!=0 and k!=j):
+                                        log_sum+=messages[k,i,x_i]
                                 s+= np.exp(log_sum)
 
                             messages[i,j,x_j]=np.log(s)
             error = (messages - old_messages)**2
             error = error.mean()
-            print(error)
             if error < epsilon: break
 
         if self.verbose: print("Is BP converged: {}".format(converged))
 
-        # calculate marginal or map
+        # calculate marginal
         probs = np.zeros((n_nodes,2))
         for i in range(n_nodes):
-            probs[i] = graph.b[i]*x_potential
-            for j in range(n_nodes):
-                if(graph.W[i,j]!=0):
-                    probs[i] += messages[j,i]
+            for x_i in range(2):
+                probs[i,x_i] = graph.b[i]*x_potential[x_i] # -1, 1
+                for k in range(n_nodes):
+                    if(graph.W[i,k]!=0):
+                        probs[i,x_i] += messages[k,i,x_i]
         results = self._safe_norm_exp(probs)
 
 
