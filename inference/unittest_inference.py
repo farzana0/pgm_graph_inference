@@ -4,19 +4,23 @@ Unit tests for inference objects
 Authors: kkorovin@cs.cmu.edu
 
 """
+
+import os
 import numpy as np
+from scipy.stats import pearsonr
+import torch
 import unittest
 
 from inference import get_algorithm
 from graphical_models import construct_binary_mrf 
-import torch
-import os
+
+
 class TestInference(unittest.TestCase):
     def setUp(self):
         self.graph = construct_binary_mrf("star", n_nodes=5, shuffle_nodes=False)
         self.graph2 = construct_binary_mrf("fc", n_nodes=5)
 
-    def test_exact_probs(self):
+    def _test_exact_probs(self):
         graph = construct_binary_mrf("fc", 3)
         # compute probs:
         probs = np.zeros((2,2,2))
@@ -32,7 +36,7 @@ class TestInference(unittest.TestCase):
         exact_probs = exact.compute_probs(graph.W, graph.b, graph.n_nodes)
         assert np.allclose(probs, exact_probs)
 
-    def test_exact(self):
+    def _test_exact(self):
         # check probs computation
         exact = get_algorithm("exact")("marginal")
         print("exact")
@@ -40,27 +44,27 @@ class TestInference(unittest.TestCase):
         #exact.reset_mode("map")
         #print(exact.run([self.graph]))
 
-    def test_bp(self):
+    def _test_bp(self):
         # BP fails on n=2 and n=3 star (on fully-conn n=3 - ok)
         bp = get_algorithm("bp")("marginal")
         res = bp.run([self.graph], use_log=True)
         print("bp")
         print(res)
 
-    def test_bp_nonsparse(self):
+    def _test_bp_nonsparse(self):
         # BP fails on n=2 and n=3 star (on fully-conn n=3 - ok)
         bp = get_algorithm("bp_nonsparse")("marginal")
         res = bp.run([self.graph], use_log=True)
         print("bp nonsparse")
         print(res)
 
-    def test_mcmc(self):
+    def _test_mcmc(self):
         mcmc = get_algorithm("mcmc")("marginal")
         res = mcmc.run([self.graph2])
         print("mcmc")
         print(res)
 
-    def test_gnn(self):
+    def _test_gnn(self):
         # print("Testing GNN constructor")
 
         # GGNN parmeters
@@ -82,11 +86,37 @@ class TestInference(unittest.TestCase):
                 message_dim_P,hidden_unit_message_dim, hidden_unit_readout_dim, T,'pretrained/gnn_model.pt')
             
             out = gnn_inference.run(graph,device)
-            print('gnn')
-            print(out)
+            #print('gnn')
+            #print(out)
         else:
             print('pretrained model needed')
 
+    def test_exact_against_bp(self):
+        n_trials = 10
+        bp = get_algorithm("bp")("marginal")
+        bp_n = get_algorithm("bp_nonsparse")("marginal")
+        exact = get_algorithm("exact")("marginal")
+
+        graphs = []
+        for trial in range(n_trials):
+            graph = construct_binary_mrf("star", n_nodes=5, shuffle_nodes=True)
+            graphs.append(graph)
+        r1 = exact.run(graphs)
+        r2 = bp.run(graphs)
+        r3 = bp_n.run(graphs)
+
+        v1, v2, v3 = [], [], []
+        for graph_res in r1:
+            v1.extend([node_res[1] for node_res in graph_res])
+        for graph_res in r2:
+            v2.extend([node_res[1] for node_res in graph_res])
+        for graph_res in r3:
+            v3.extend([node_res[1] for node_res in graph_res])
+
+        corr_bp = pearsonr(v1, v2)
+        corr_bpn = pearsonr(v1, v3)
+        print("Correlation between exact and BP:", corr_bp[0])
+        print("Correlation between exact and BP nonsparse:", corr_bpn[0])
 
 if __name__ == "__main__":
     unittest.main()

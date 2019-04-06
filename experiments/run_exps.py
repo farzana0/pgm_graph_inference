@@ -172,5 +172,5 @@ if __name__ == "__main__":
     # in_sample_experiment(struct="path")
     # out_of_sample_experiment("bipart")
     # upscaling_experiment("fc")
-    in_sample_experiment_map(struct="path")
+    in_sample_experiment_map(struct="fc")
 
