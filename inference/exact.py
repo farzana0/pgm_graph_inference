@@ -12,14 +12,21 @@ from tqdm import tqdm
 
 class ExactInference(Inference):
     """ Special case BinaryMRF implementation """
+    def _safe_norm_exp(self, logit):
+        logit -= np.max(logit, keepdims=True)
+        prob = np.exp(logit)
+        prob /= prob.sum(keepdims=True)
+        return prob
+
     def compute_probs(self, W, b, n):
         log_potentials = np.zeros([2]*n)
         for state in itertools.product([0, 1], repeat=n):
             state_ind = np.array(state)
             state_val = 2 * state_ind - 1
             log_potentials[state] = state_val.dot(W.dot(state_val)) + b.dot(state_val)
-        probs = np.exp(log_potentials)
-        probs /= probs.sum()
+        # probs = np.exp(log_potentials)
+        # probs /= probs.sum()
+        probs = self._safe_norm_exp(log_potentials)
         return probs
 
     def run_one(self, graph):

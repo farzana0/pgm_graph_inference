@@ -6,6 +6,7 @@ Authors: kkorovin@cs.cmu.edu
 """
 
 import os
+from time import time
 import numpy as np
 from scipy.stats import pearsonr
 import torch
@@ -91,8 +92,9 @@ class TestInference(unittest.TestCase):
         else:
             print('pretrained model needed')
 
-    def test_exact_against_bp(self):
-        n_trials = 10
+    def _test_exact_against_bp(self):
+        n_trials = 100
+
         bp = get_algorithm("bp")("marginal")
         bp_n = get_algorithm("bp_nonsparse")("marginal")
         exact = get_algorithm("exact")("marginal")
@@ -117,6 +119,58 @@ class TestInference(unittest.TestCase):
         corr_bpn = pearsonr(v1, v3)
         print("Correlation between exact and BP:", corr_bp[0])
         print("Correlation between exact and BP nonsparse:", corr_bpn[0])
+
+    def test_exact_against_mcmc(self):
+        sizes = [5, 10, 15]
+        n_samples = [500, 1000, 2000, 5000, 10000]
+        n_trials = 100
+
+        mcmc = get_algorithm("mcmc")("marginal")
+        exact = get_algorithm("exact")("marginal")
+
+        def get_exp_data(n_trials, n_nodes):
+            graphs = []
+            for trial in range(n_trials):
+                graph = construct_binary_mrf("fc", n_nodes=n_nodes, shuffle_nodes=True)
+                graphs.append(graph)
+            return graphs
+
+        for size in sizes:
+            graphs = get_exp_data(n_trials, size)
+            exact_res = exact.run(graphs)
+            for n_samp in n_samples:
+                mcmc_res = mcmc.run(graphs, n_samp)
+                v1, v2  = [], []
+                for graph_res in mcmc_res:
+                    v1.extend([node_res[1] for node_res in graph_res])
+                for graph_res in exact_res:
+                    v2.extend([node_res[1] for node_res in graph_res])
+
+                corr_mcmc = pearsonr(v1, v2)
+                print(f"{size},{n_samp}: correlation between exact and MCMC: {corr_mcmc[0]}")
+
+    def test_mcmc_runtimes(self):
+        sizes = [5, 15, 50, 500, 1000]
+        n_samples = [500, 1000, 2000]
+        n_trials = 10
+
+        mcmc = get_algorithm("mcmc")("marginal")
+        exact = get_algorithm("exact")("marginal")
+
+        def get_exp_data(n_trials, n_nodes):
+            graphs = []
+            for trial in range(n_trials):
+                graph = construct_binary_mrf("fc", n_nodes=n_nodes, shuffle_nodes=True)
+                graphs.append(graph)
+            return graphs
+
+        for size in sizes:
+            graphs = get_exp_data(n_trials, size)
+            for n_samp in n_samples:
+                t0 = time()
+                mcmc_res = mcmc.run(graphs, n_samp)
+                t = time() - t0
+                print(f"{size},{n_samp}: {t/10} seconds per graph")
 
 if __name__ == "__main__":
     unittest.main()

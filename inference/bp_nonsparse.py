@@ -64,21 +64,19 @@ class BeliefPropagation_nonsparse(Inference):
             converged = True
             # save old message for checking convergence
             old_messages = messages.copy()
-            # update messages 
+            # update messages
             for i in range(n_nodes):
                 for j in range(n_nodes):
                     if graph.W[i,j] != 0:
                         for x_j in range(2):
-                            #s = 0
                             s = []
                             for x_i in range(2):
                                 log_sum = graph.W[i,j]*x_potential[x_i]*x_potential[x_j]+graph.b[x_i]*x_potential[x_i]
                                 for k in range(n_nodes):
                                     if (graph.W[i,k]!=0 and k!=j):
                                         log_sum+=messages[k,i,x_i]
-                                # s+= np.exp(log_sum)
                                 s.append(log_sum)
-                            messages[i,j,x_j] = logsumexp(s)  #np.log(s)
+                            messages[i,j,x_j] = logsumexp(s)
             error = (messages - old_messages)**2
             error = error.mean()
             if error < epsilon: break
