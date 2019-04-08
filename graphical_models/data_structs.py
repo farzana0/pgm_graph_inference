@@ -5,6 +5,8 @@ Authors: kkorovin@cs.cmu.edu
 
 """
 
+import networkx as nx
+import numpy as np
 from inference import get_algorithm
 
 dflt_algo = {"marginal": "bp", "map": "bp"}
@@ -78,6 +80,16 @@ class BinaryMRF(GraphicalModel):
         super(BinaryMRF, self).__init__(
             n_nodes=self.n_nodes,
             default_algo=self.default_algo)
+
+    def get_subgraph_on_nodes(self, node_list):
+        """ node_list does not need to be ordered,
+            return in the same order
+        """
+        nx_graph = nx.from_numpy_matrix(self.W)
+        sg = nx_graph.subgraph(node_list)
+        W_sg = np.array(nx.to_numpy_matrix(sg))
+        b_sg = self.b[node_list]  # in the same order
+        return BinaryMRF(W_sg, b_sg)
 
 
 if __name__ == "__main__":

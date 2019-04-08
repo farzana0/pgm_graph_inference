@@ -1,10 +1,15 @@
 """
 
 Data creation helpers and action.
-Authors: kkorovin@cs.cmu.edu
 
-If variable size range is supplied, each
-generated graph has randomly chosen size in range.
+For creating data labels, one can use exact or approximate inference algorithms,
+    as well as scalable alternatives such as subgraph labeling and label propagation
+    (see ./labeling/ directory for details).
+
+If variable size range is supplied, each generated graph
+    has randomly chosen size in range.
+
+@authors: kkorovin@cs.cmu.edu
 
 TODO:
 * add random seeds
@@ -18,6 +23,7 @@ from time import time
 
 from graphical_models import construct_binary_mrf
 from inference import get_algorithm
+from labeling import LabelProp, LabelSG
 
 
 def parse_dataset_args():
@@ -37,7 +43,8 @@ def parse_dataset_args():
     parser.add_argument('--mode', default='marginal', type=str,
                         help='type of inference to perform')
     parser.add_argument('--algo', default='exact', type=str,
-                        help='algorithm to use for labeling')
+                        help='Algorithm to use for labeling. Can be exact/bp/mcmc,\
+                        label_prop for label propagation, or label_sg for subgraph labeling')
 
     # no need to change the following arguments
     parser.add_argument('--base_data_dir', default='./graphical_models/datasets/',
@@ -49,12 +56,12 @@ def parse_dataset_args():
 
 
 if __name__=="__main__":
-    ## parse arguments and dataset name
+    # parse arguments and dataset name
     args = parse_dataset_args()
     low, high = args.size_range.split("_")
     size_range = np.arange(int(low), int(high)+1)
-    ## construct graphical models
 
+    # construct graphical models
     graphs = []
     for _ in range(args.num):
         # sample n_nodes from range
@@ -62,11 +69,23 @@ if __name__=="__main__":
         graphs.append(construct_binary_mrf(args.graph_struct, n_nodes))
         if args.verbose: print(graphs[-1].W)
 
-    ## label them using a chosen algorithm
-    algo_obj = get_algorithm(args.algo)(args.mode)
-    list_of_res = algo_obj.run(graphs)
+    # label them using a chosen algorithm
+    if args.algo in ['exact', 'bp', 'mcmc']:
+        algo_obj = get_algorithm(args.algo)(args.mode)
+        list_of_res = algo_obj.run(graphs)
+    # Propagate-from-subgraph algorithm (pt 2.2):
+    elif args.algo.startswith('label_prop'):
+        inf_algo = get_algorithm(args.algo[len('label_prop'):])(args.mode)
+        sg_size = 10  # TODO
+        label_prop = LabelProp(sg_size, inf_algo)  # some settings here
+        list_of_res = label_prop.run(graphs)
+    # Subgraph labeling algorithm (pt 2.1):
+    elif args.algo == 'label_sg':
+        raise NotImplementedError("TODO")
+    else:
+        raise ValueError(f"Labeling algorithm {args.algo} not supported.")
 
-    ## save to graphical_models/datasets
+    # save to graphical_models/datasets
     for graph, res in zip(graphs, list_of_res):
         if args.mode == "marginal":
             res_marginal, res_map = res, None

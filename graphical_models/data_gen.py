@@ -56,7 +56,12 @@ def generate_struct_mask(struct, n_nodes, shuffle_nodes):
     node_order = list(range(n_nodes))
     if shuffle_nodes:
         np.random.shuffle(node_order)
-    return nx.to_numpy_matrix(g, nodelist=node_order).astype(int)
+
+    # a weird subclass by default; raises a deprecation warning
+    # with a new update of networkx, this should be updated to
+    # nx.convert_matrix.to_numpy_array
+    np_arr_g = nx.to_numpy_matrix(g, nodelist=node_order)
+    return np_arr_g.astype(int)
 
 
 def construct_binary_mrf(struct, n_nodes, shuffle_nodes=True):
