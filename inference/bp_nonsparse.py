@@ -5,6 +5,7 @@ Here we can rely on some existing library,
 for example https://github.com/mbforbes/py-factorgraph
 Authors: lingxiao@cmu.edu
          kkorovin@cs.cmu.edu
+         markcheu@andrew.cmu.edu
 """
 
 from inference.core import Inference
@@ -106,5 +107,5 @@ class BeliefPropagation_nonsparse(Inference):
 
 
 if __name__ == "__main__":
-    bp = BeliefPropagation("marginal")
+    bp = BeliefPropagation_nonsparse("marginal")
     
