@@ -27,13 +27,19 @@ def generate_struct_mask(struct, n_nodes, shuffle_nodes):
     elif struct == "ladder":
         g = nx.ladder_graph(n_nodes)
     elif struct == "grid":
-        g = nx.grid_graph(n_nodes)
+        m = np.random.choice(range(1, n_nodes+1))
+        n = n_nodes // m
+        g = nx.grid_2d_graph(m, n)
     elif struct == "circ_ladder":
         g = nx.circular_ladder_graph(n_nodes)
     elif struct == "barbell":
-        g = nx.barbell_graph(n_nodes)
+        assert n_nodes >= 4
+        m = np.random.choice(range(2, n_nodes-1))
+        blocks = (m, n_nodes-m)
+        g = nx.barbell_graph(*blocks)
     elif struct == "loll":
-        m = np.random.choice(range(n_nodes))
+        assert n_nodes >= 2
+        m = np.random.choice(range(2, n_nodes+1))
         g = nx.lollipop_graph(m, n_nodes-m)
     elif struct == "wheel":
         g = nx.wheel_graph(n_nodes)
@@ -85,11 +91,16 @@ def construct_binary_mrf(struct, n_nodes, shuffle_nodes=True):
 
 
 if __name__ == "__main__":
-    graph = construct_binary_mrf("star", 3)
-    print(graph.W, graph.b)
+    print("Testing all structures:")
+    n_nodes = 5
+    for struct in struct_names:
+        print(struct, end=": ")
+        graph = construct_binary_mrf(struct, n_nodes)
+        print("ok")
+        # print(graph.W, graph.b)
 
     print("Nodes not shuffled:")
-    graph = construct_binary_mrf("wheel", 5, False)
+    graph = construct_binary_mrf("wheel", n_nodes, False)
     print(graph.W, graph.b)
 
     print("Nodes shuffled:")
