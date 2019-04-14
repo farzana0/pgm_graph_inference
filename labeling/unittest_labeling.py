@@ -45,5 +45,19 @@ class TestInference(unittest.TestCase):
         self.run_lbp_on_graph(self.graph_star)
         self.run_lbp_on_graph(self.graph_fc)
 
+    def run_tree_on_graph(self, graph):
+        exact = get_algorithm("exact")("marginal")
+        lbt = LabelTree(exact)
+
+        res = lbt.run([graph])
+        true_res = exact.run([graph])
+        mse_err = np.sqrt(np.sum(np.array(res) - np.array(true_res))**2)
+        print(f"MSE error: {mse_err}")
+
+    def test_tree_prop(self, graph):
+        self.run_tree_on_graph(self.graph_star)
+        self.run_tree_on_graph(self.graph_fc)
+
+
 if __name__ == "__main__":
     unittest.main()

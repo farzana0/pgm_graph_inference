@@ -3,6 +3,8 @@
 Graphical model class
 Authors: kkorovin@cs.cmu.edu
 
+TODO:
+* MST generation in BinaryMRF
 """
 
 import networkx as nx
@@ -90,6 +92,9 @@ class BinaryMRF(GraphicalModel):
         W_sg = np.array(nx.to_numpy_matrix(sg))
         b_sg = self.b[node_list]  # in the same order
         return BinaryMRF(W_sg, b_sg)
+
+    def get_max_spanning_tree(self):
+        raise NotImplementedError
 
 
 if __name__ == "__main__":
