@@ -58,16 +58,27 @@ class LabelSG:
 			if(verbose):
 				print('Partition by Girvan-Newman Algorithm: ', partition)
 
-		elif(algorithm=='igraph'):
-						# for choices, see https://igraph.org/python/doc/python-igraph.pdf, https://yoyoinwanderland.github.io/2017/08/08/Community-Detection-in-Python/
-			
-			# community = ig_g.community_label_propagation()
-			# community = ig_g.community_optimal_modularity() #for small graph
+		# for other choices, see https://igraph.org/python/doc/python-igraph.pdf, https://yoyoinwanderland.github.io/2017/08/08/Community-Detection-in-Python/
+		elif(algorithm=='igraph-community_infomap'):
 			community = ig_g.community_infomap()
 			partition = self.partition_to_dict2(nx_g,community)
-
 			if(verbose):
-				print('Partition by other methods ', partition)
+				print('Partition by community infomap ', partition)
+
+		elif(algorithm=='igraph-label_propagation'):			
+			community = ig_g.community_label_propagation()
+			partition = self.partition_to_dict2(nx_g,community)
+			if(verbose):
+				print('Partition by label propagation ', partition)
+
+		elif(algorithm=='igraph-optimal_modularity'):
+			if(nx_g.number_of_nodes()>50):
+				print('Too many nodes')
+				return
+			community = ig_g.community_optimal_modularity() #for small graph
+			partition = self.partition_to_dict2(nx_g,community)
+			if(verbose):
+				print('Partition by integer programming (optimal modularity)', partition)
 
 
 		elif(algorithm=='test'):
@@ -99,24 +110,23 @@ class LabelSG:
 		plt.colorbar()
 		plt.show()
 
-	# Convert Partition to Dictionary format: node id: partiiton 
+	# Convert Partition to Dictionary format (from network community): node id: partiiton 
 	def partition_to_dict(self, graph,partition_unorganized):
 		count = 0
 		partition = {}
 		for i in range(len(partition_unorganized)):
 			partition_i = partition_unorganized[i]
 			for j in range(len(partition_i)):
-				# print(partition_i[j])
 				partition[partition_i[j]]=count
 			count += 1
 		return partition
 
+	# Convert Partition to Dictionary format (from igraph): node id: partiiton 
 	def partition_to_dict2(self, graph,partition_unorganized):
 		count = 0
 		partition = {}
 		for i in range(len(partition_unorganized)):
 			partition_i = partition_unorganized[i]
-			# print(partition_i)
 			for j in range(len(partition_i)):
 				partition[partition_i[j]]=count
 			count += 1

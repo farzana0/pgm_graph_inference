@@ -15,16 +15,17 @@ class TestInference(unittest.TestCase):
                                         shuffle_nodes=False)
         self.graph_fc = construct_binary_mrf("fc", n_nodes=10,
                                             shuffle_nodes=False)
-        self.graph_barbell_100 = construct_binary_mrf("barbell", n_nodes=100,
+        self.graph_barbell_50 = construct_binary_mrf("barbell", n_nodes=50,
                                         shuffle_nodes=False)
-        self.graph_cycle_100 = construct_binary_mrf("cycle", n_nodes=100,
+        self.graph_cycle_50 = construct_binary_mrf("cycle", n_nodes=50,
                                             shuffle_nodes=False)
     def run_lbp_subgraph(self,graph):
-        print('aa')
         labelSG = LabelSG()
         labels = labelSG.partition_graph(graph, algorithm='Louvain', verbose=True)
         labels = labelSG.partition_graph(graph, algorithm='Girvan_newman', verbose=True)
-        labels = labelSG.partition_graph(graph, algorithm='igraph', verbose=True)
+        labels = labelSG.partition_graph(graph, algorithm='igraph-community_infomap', verbose=True)
+        labels = labelSG.partition_graph(graph, algorithm='igraph-label_propagation', verbose=True)
+        labels = labelSG.partition_graph(graph, algorithm='igraph-optimal_modularity', verbose=True)
 
 
     def run_lbp_on_graph(self, graph):
@@ -72,9 +73,9 @@ class TestInference(unittest.TestCase):
         self.run_tree_on_graph(self.graph_fc)
 
     def test_graph_cut(self):
-        """ Testing tree-based generation """
-        self.run_lbp_subgraph(self.graph_barbell_100)
-        self.run_lbp_subgraph(self.graph_cycle_100)
+        """ Testing graph cut """
+        self.run_lbp_subgraph(self.graph_barbell_50)
+        self.run_lbp_subgraph(self.graph_cycle_50)
 
 
 if __name__ == "__main__":
