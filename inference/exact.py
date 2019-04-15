@@ -56,6 +56,6 @@ class ExactInference(Inference):
 
     def run(self, graphs):
         res = []
-        for graph in tqdm(graphs):
+        for graph in graphs:
             res.append(self.run_one(graph))
         return res

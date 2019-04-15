@@ -93,8 +93,15 @@ class BinaryMRF(GraphicalModel):
         b_sg = self.b[node_list]  # in the same order
         return BinaryMRF(W_sg, b_sg)
 
-    def get_max_spanning_tree(self):
-        raise NotImplementedError
+    def get_max_abs_spanning_tree(self):
+        nx_graph = nx.from_numpy_matrix(np.abs(self.W))
+        tree = nx.minimum_spanning_tree(nx_graph)
+        W_abs_tree = np.array(nx.to_numpy_matrix(tree))
+        W_mask = np.where(W_abs_tree > 0, 1, 0)
+        # zero out unused edges:
+        W_tree = W_mask * self.W
+        b_tree = self.b
+        return BinaryMRF(W_tree, b_tree)
 
 
 if __name__ == "__main__":

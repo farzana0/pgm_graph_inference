@@ -10,7 +10,7 @@ class LabelTree:
 
     def run_one(self, graph):
         # extract MST with the same node order
-        tree = graph.get_max_spanning_tree()
+        tree = graph.get_max_abs_spanning_tree()
         # label the tree
         labels = self.inf_algo.run([tree])[0]
         return labels

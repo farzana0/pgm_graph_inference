@@ -5,7 +5,7 @@ Unit tests for approximate labeling
 import unittest
 import numpy as np
 
-from labeling import LabelProp
+from labeling import LabelProp, LabelTree
 from graphical_models import construct_binary_mrf
 from inference import get_algorithm
 
@@ -13,8 +13,8 @@ class TestInference(unittest.TestCase):
     def setUp(self):
         self.graph_star = construct_binary_mrf("star", n_nodes=10,
                                         shuffle_nodes=False)
-        self.graph_fc = construct_binary_mrf("star", n_nodes=10,
-                                        shuffle_nodes=False)
+        self.graph_fc = construct_binary_mrf("fc", n_nodes=10,
+                                            shuffle_nodes=False)
 
     def run_lbp_on_graph(self, graph):
         exact = get_algorithm("exact")("marginal")
@@ -54,7 +54,9 @@ class TestInference(unittest.TestCase):
         mse_err = np.sqrt(np.sum(np.array(res) - np.array(true_res))**2)
         print(f"MSE error: {mse_err}")
 
-    def test_tree_prop(self, graph):
+    def test_tree_prop(self):
+        """ Testing tree-based generation """
+        print("Trees:")
         self.run_tree_on_graph(self.graph_star)
         self.run_tree_on_graph(self.graph_fc)
 
