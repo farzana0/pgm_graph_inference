@@ -18,6 +18,10 @@ def generate_struct_mask(struct, n_nodes, shuffle_nodes):
     # a horrible collection of ifs due to args in nx constructors
     if struct == "star":
         g = nx.star_graph(n_nodes)
+    elif struct == "random_tree":
+        g = nx.random_tree(n_nodes)
+    elif struct == "powerlaw_tree":
+        g = nx.powerlaw_tree(n_nodes, gamma=3, seed=None)
     elif struct == "binary_tree":
         raise NotImplementedError("Implement a binary tree.")
     elif struct == "path":
