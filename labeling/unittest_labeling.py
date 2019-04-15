@@ -22,7 +22,7 @@ class TestInference(unittest.TestCase):
     def run_lbp_subgraph(self,graph):
         print('aa')
         labelSG = LabelSG()
-        # labels = labelSG.partition_graph(graph, algorithm='Louvain', verbose=True)
+        labels = labelSG.partition_graph(graph, algorithm='Louvain', verbose=True)
         labels = labelSG.partition_graph(graph, algorithm='Girvan_newman', verbose=True)
         labels = labelSG.partition_graph(graph, algorithm='igraph', verbose=True)
 

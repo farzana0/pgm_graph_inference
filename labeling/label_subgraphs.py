@@ -10,7 +10,7 @@ import numpy as np
 import networkx as nx
 from networkx.algorithms import community as nx_community
 import matplotlib.pyplot as plt
-import community 
+import community as com
 
 
 import igraph as ig  #requires installing igraph from https://igraph.org/python/#startpy
@@ -20,21 +20,31 @@ class LabelSG:
 		pass
 
 	# from https://github.com/taynaud/python-louvain
-	def partition_graph(self,graph,algorithm,non_weighted=True, verbose=False):
+	def partition_graph(self,graph,algorithm,unweighted=False, verbose=False):
 		adj2 = graph.W
 		adj = np.copy(adj2)
-		# adj[np.nonzero(adj)]=1
 		nx_g = nx.Graph() #networkx
 		nx_g_unweighted = nx.Graph()
+
+
 		for i in range(adj.shape[0]):
 			for j in range(adj.shape[1]):
 				if(adj[i,j]!=0):
 					nx_g.add_weighted_edges_from([(i,j,adj[i,j])])
 					nx_g_unweighted.add_edge(i,j)
+		
+		if(unweighted):
+			nx_g = nx_g_unweighted
 
-		# print('Adjacency: ', adj)
+		# convert to Igraph to use their community detection algorithms.
+		ig_g = ig.Graph(len(nx_g), list(zip(*list(zip(*nx.to_edgelist(nx_g)))[:2])))
+		ig_g_unweighted = ig.Graph(len(nx_g_unweighted), list(zip(*list(zip(*nx.to_edgelist(nx_g)))[:2])))
+
+		if(verbose):
+			print('Adjacency matrix: ', adj)
+
 		if(algorithm=='Louvain'):
-			partition = community.best_partition(nx_g_unweighted,resolution=100000)
+			partition = com.best_partition(nx_g_unweighted,resolution=100000)
 			if(verbose):
 				print('Partition by Louvain Algorithm: ', partition)
 				self.visualize_partition(nx_g_unweighted,partition)
@@ -49,24 +59,24 @@ class LabelSG:
 				print('Partition by Girvan-Newman Algorithm: ', partition)
 
 		elif(algorithm=='igraph'):
-			ig_g = ig.Graph(len(nx_g), list(zip(*list(zip(*nx.to_edgelist(nx_g)))[:2])))
-			ig_g_unweighted = ig.Graph(len(nx_g_unweighted), list(zip(*list(zip(*nx.to_edgelist(nx_g)))[:2])))
-			# for choices, see https://igraph.org/python/doc/python-igraph.pdf, https://yoyoinwanderland.github.io/2017/08/08/Community-Detection-in-Python/
+						# for choices, see https://igraph.org/python/doc/python-igraph.pdf, https://yoyoinwanderland.github.io/2017/08/08/Community-Detection-in-Python/
 			
 			# community = ig_g.community_label_propagation()
 			# community = ig_g.community_optimal_modularity() #for small graph
 			community = ig_g.community_infomap()
-
+			partition = self.partition_to_dict2(nx_g,community)
 
 			if(verbose):
-				print('Partition by other methods ', community)
+				print('Partition by other methods ', partition)
 
 
-		elif(alogorithm=='test'):
+		elif(algorithm=='test'):
 			print('GSP approach')
 
+		else:
+			raise NotImplementedError("Partition {} not implemented yet.".format(algorithm))
 
-		# return partition
+		return partition
 
 	# Visualize Partition
 	def visualize_partition(self, graph, partition):
@@ -97,6 +107,17 @@ class LabelSG:
 			partition_i = partition_unorganized[i]
 			for j in range(len(partition_i)):
 				# print(partition_i[j])
+				partition[partition_i[j]]=count
+			count += 1
+		return partition
+
+	def partition_to_dict2(self, graph,partition_unorganized):
+		count = 0
+		partition = {}
+		for i in range(len(partition_unorganized)):
+			partition_i = partition_unorganized[i]
+			# print(partition_i)
+			for j in range(len(partition_i)):
 				partition[partition_i[j]]=count
 			count += 1
 		return partition
