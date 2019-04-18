@@ -56,9 +56,11 @@ class GatedGNNInference(Inference):
             out = self.model(J,b)
             return out.detach().cpu().numpy()
 
-    def run(self, graphs, device):
+    def run(self, graphs, device,  verbose=False):
+        self.verbose = verbose
         res = []
-        for graph in graphs:
+        graph_iterator = tqdm(graphs) if self.verbose else graphs
+        for graph in graph_iterator:
             res.append(self.run_one(graph, device))
         return res
 

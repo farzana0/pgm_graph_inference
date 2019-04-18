@@ -67,21 +67,25 @@ if __name__=="__main__":
         # sample n_nodes from range
         n_nodes = np.random.choice(size_range)
         graphs.append(construct_binary_mrf(args.graph_struct, n_nodes))
-        if args.verbose: print(graphs[-1].W)
 
     # label them using a chosen algorithm
     if args.algo in ['exact', 'bp', 'mcmc']:
         algo_obj = get_algorithm(args.algo)(args.mode)
-        list_of_res = algo_obj.run(graphs)
+        list_of_res = algo_obj.run(graphs, verbose=args.verbose)
+
     # Propagate-from-subgraph algorithm (pt 2.2):
     elif args.algo.startswith('label_prop'):
-        inf_algo = get_algorithm(args.algo[len('label_prop'):])(args.mode)
-        sg_size = 10  # TODO
-        label_prop = LabelProp(sg_size, inf_algo)  # some settings here
-        list_of_res = label_prop.run(graphs)
+        # e.g. label_prop_exact_10
+        inf_algo_name, sg_size = args.algo.split('_')[2:]
+        sg_size = int(sg_size)
+        inf_algo = get_algorithm(inf_algo_name)(args.mode)
+        label_prop = LabelProp(sg_size, inf_algo)  # TODO: some other settings here
+        list_of_res = label_prop.run(graphs, verbose=args.verbose)
+
     # Subgraph labeling algorithm (pt 2.1):
     elif args.algo == 'label_sg':
         raise NotImplementedError("TODO")
+
     else:
         raise ValueError(f"Labeling algorithm {args.algo} not supported.")
 

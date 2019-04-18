@@ -4,11 +4,11 @@ Exact inference
 Authors: kkorovin@cs.cmu.edu
 
 """
-
-import numpy as np
 import itertools
-from inference.core import Inference
+import numpy as np
 from tqdm import tqdm
+from inference.core import Inference
+
 
 class ExactInference(Inference):
     """ Special case BinaryMRF implementation """
@@ -54,8 +54,10 @@ class ExactInference(Inference):
                                           probs.shape)
             return 2 * np.array(binary_ind) - 1
 
-    def run(self, graphs):
+    def run(self, graphs, verbose=False):
+        self.verbose = verbose
         res = []
-        for graph in graphs:
+        graph_iterator = tqdm(graphs) if self.verbose else graphs
+        for graph in graph_iterator:
             res.append(self.run_one(graph))
         return res

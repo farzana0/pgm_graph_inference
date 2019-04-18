@@ -37,8 +37,9 @@ class GibbsSampling(Inference):
         return np.array(samples[burn_in::stride])
 
     def collect_samples(self, graphs, n):
+        graph_iterator = tqdm(graphs) if self.verbose else graphs
         samples = []
-        for graph in graphs:
+        for graph in graph_iterator:
             self.W = graph.W
             self.u = graph.b
             self.d = graph.n_nodes
@@ -48,7 +49,8 @@ class GibbsSampling(Inference):
 
         return samples
 
-    def run(self, graphs, n=1000):
+    def run(self, graphs, n=1000, verbose=False):
+        self.verbose = verbose
         graphs_samples = self.collect_samples(graphs, n)
         res = []
         for samples, graph in zip(graphs_samples, graphs):

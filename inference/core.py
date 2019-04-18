@@ -16,7 +16,7 @@ class Inference:
             raise ValueError("Inference mode {} not supported".format(mode))
         self.mode = mode
 
-    def run(self, graphs):
+    def run(self, graphs, verbose=False):
         raise NotImplementedError("Implement in a child class.")
 
     def __repr__(self):

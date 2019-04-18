@@ -10,9 +10,10 @@ import networkx as nx
 
 from graphical_models.data_structs import BinaryMRF
 
-struct_names = ["star", "path", "cycle", "ladder", "grid",
-               "circ_ladder", "barbell", "loll", "wheel",
-               "bipart", "tripart", "fc"]
+struct_names = ["star", "random_tree", "powerlaw_tree", "path",
+                "cycle", "ladder", "grid",
+                "circ_ladder", "barbell", "loll", "wheel",
+                "bipart", "tripart", "fc"]
 
 def generate_struct_mask(struct, n_nodes, shuffle_nodes):
     # a horrible collection of ifs due to args in nx constructors

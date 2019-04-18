@@ -18,12 +18,32 @@ graphical_models/datasets/{train/val/test}
 * `create_data.py` generates graphs from user-specified arguments and saves to `graphical_models/datasets` by default.
 * `train.py` uses one of generated datasets to train a GNN inference procedure (such as GatedGNN).
 
+## Installing dependencies
+
+The following command will install several python packages for graphs, numerical computations and deep learning:
+
+```bash
+pip install -r requirements.txt
+```
+
+Installation of `igraph` may fail under MacOS and anaconda. In this case, try setting `MACOSX_DEPLOYMENT_TARGET`:
+
+```bash
+MACOSX_DEPLOYMENT_TARGET=10.9 pip install graphkernels
+```
+
 ## Getting started
 
 For imports to work correctly, add root of the repository to `PYTHONPATH` by running
 
 ```bash
 source setup.sh
+```
+
+To generate data to reproduce experiments, run
+
+```bash
+bash prepare_tree_experiment.sh  # for main experiment 1
 ```
 
 ## References

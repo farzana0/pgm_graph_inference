@@ -10,7 +10,7 @@ then labels are propagated to the rest of the graph.
 import numpy as np
 import networkx as nx
 import warnings
-
+from tqdm import tqdm
 
 class LabelProp:
     """ Adapted from LabelPropagation in sklearn """
@@ -65,25 +65,32 @@ class LabelProp:
 
             normalizer = np.sum(
                 self.label_distributions_, axis=1)[:, np.newaxis]
-            assert np.all(normalizer != 0.), normalizer
+
+            self._patch_normalizer(normalizer)
             self.label_distributions_ /= normalizer
             self.label_distributions_ = np.where(unlabeled,
                                                  self.label_distributions_,
                                                  y_static)
 
         else:
-            warnings.warn(
-                f'max_iter={self.max_iter} was reached without convergence.'
-            )
+            warnings.warn(f'max_iter={self.max_iter} was reached without convergence.')
             self.n_iter_ += 1
 
         normalizer = np.sum(self.label_distributions_, axis=1)[:, np.newaxis]
+        self._patch_normalizer(normalizer)
         self.label_distributions_ /= normalizer
         return self.label_distributions_
 
-    def run(self, graphs):
+    def run(self, graphs, verbose=False):
+        self.verbose = verbose
         res = []
-        for graph in graphs:
+        graph_iterator = tqdm(graphs) if self.verbose else graphs
+        for graph in graph_iterator:
             res.append(self.run_one(graph))
         return res
+
+    def _patch_normalizer(self, normalizer, value=1e-6):
+        if not np.all(normalizer != 0.):
+            normalizer[normalizer == 0.] = value
+        assert np.all(normalizer != 0.)
 

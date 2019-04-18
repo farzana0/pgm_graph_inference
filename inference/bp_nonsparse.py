@@ -7,10 +7,10 @@ Authors: lingxiao@cmu.edu
          kkorovin@cs.cmu.edu
          markcheu@andrew.cmu.edu
 """
-
-from inference.core import Inference
 import numpy as np 
 from scipy.special import logsumexp
+
+from inference.core import Inference
 
 
 class BeliefPropagation_nonsparse(Inference):

@@ -7,9 +7,11 @@ Authors: lingxiao@cmu.edu
          kkorovin@cs.cmu.edu
 """
 
-from inference.core import Inference
-import numpy as np 
+import numpy as np
 from scipy.special import logsumexp
+from tqdm import tqdm
+
+from inference.core import Inference
 
 
 class BeliefPropagation(Inference):
@@ -62,7 +64,6 @@ class BeliefPropagation(Inference):
         n_V, n_E = len(graph.b), len(row)
         # create index dict
         degrees = np.sum(graph.W != 0, axis=0)
-        if self.verbose: print(degrees)
         index_bases = np.zeros(n_V, dtype=np.int64)
         for i in range(1, n_V): 
             index_bases[i] = index_bases[i-1] + degrees[i-1]
@@ -116,9 +117,7 @@ class BeliefPropagation(Inference):
                            messages[index_bases[j]+neighbors[j].index(i)])                        
                 # update
                 messages[index_bases[i]:index_bases[i]+degrees[i]] = sumOp(messages[index_bases[i]:index_bases[i]+degrees[i]].reshape(degrees[i],2,1) + local_potential, axis=1)
-            
-            # exit(0)
-
+ 
             # check convergence 
             if use_log:
                 error = (self._safe_norm_exp(messages) - self._safe_norm_exp(old_messages))**2
@@ -130,13 +129,12 @@ class BeliefPropagation(Inference):
             else:
                 error = 0.
 
-            if self.verbose: print(error)
             if error < epsilon: 
                 converged = True
                 #print(error)
                 break
 
-        if self.verbose: print("Is BP converged: {}".format(converged))
+        # if self.verbose: print("Is BP converged: {}".format(converged))
 
         # calculate marginal or map
         probs = np.zeros([n_V, 2])
@@ -149,14 +147,12 @@ class BeliefPropagation(Inference):
                     probs[i] += messages[index_bases[j]+neighbors[j].index(i)] 
                 else:
                     probs[i] *= messages[index_bases[j]+neighbors[j].index(i)] 
-
         # normalize
         if self.mode == 'marginal':
             if use_log:
                 results = self._safe_norm_exp(probs)
             else:
                 results = self._safe_divide(probs, probs.sum(axis=1, keepdims=True))
-
 
         if self.mode == 'map':
             results = np.argmax(probs, axis=1)
@@ -168,7 +164,8 @@ class BeliefPropagation(Inference):
     def run(self, graphs, use_log=True, verbose=False):
         self.verbose = verbose
         res = []
-        for graph in graphs:
+        graph_iterator = tqdm(graphs) if self.verbose else graphs
+        for graph in graph_iterator:
             res.append(self.run_one(graph, use_log=use_log))
         return res
 
