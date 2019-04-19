@@ -45,6 +45,12 @@ class TestInference(unittest.TestCase):
         #exact.reset_mode("map")
         #print(exact.run([self.graph]))
 
+    def _test_tree_bp(self):
+        bp = get_algorithm("tree_bp")("marginal")
+        res = bp.run([self.graph])
+        print("tree_bp")
+        print(res)
+
     def _test_bp(self):
         # BP fails on n=2 and n=3 star (on fully-conn n=3 - ok)
         bp = get_algorithm("bp")("marginal")
@@ -92,35 +98,41 @@ class TestInference(unittest.TestCase):
         else:
             print('pretrained model needed')
 
-    def _test_exact_against_bp(self):
+    def test_exact_against_bp(self):
         n_trials = 100
 
         bp = get_algorithm("bp")("marginal")
+        tree_bp = get_algorithm("tree_bp")("marginal")
         bp_n = get_algorithm("bp_nonsparse")("marginal")
         exact = get_algorithm("exact")("marginal")
 
         graphs = []
         for trial in range(n_trials):
-            graph = construct_binary_mrf("star", n_nodes=5, shuffle_nodes=True)
+            graph = construct_binary_mrf("random_tree", n_nodes=8, shuffle_nodes=True)
             graphs.append(graph)
         r1 = exact.run(graphs)
         r2 = bp.run(graphs)
         r3 = bp_n.run(graphs)
+        r4 = tree_bp.run(graphs)
 
-        v1, v2, v3 = [], [], []
+        v1, v2, v3, v4 = [], [], [], []
         for graph_res in r1:
             v1.extend([node_res[1] for node_res in graph_res])
         for graph_res in r2:
             v2.extend([node_res[1] for node_res in graph_res])
         for graph_res in r3:
             v3.extend([node_res[1] for node_res in graph_res])
+        for graph_res in r4:
+            v4.extend([node_res[1] for node_res in graph_res])
 
         corr_bp = pearsonr(v1, v2)
         corr_bpn = pearsonr(v1, v3)
+        corr_treebp = pearsonr(v1, v4)
         print("Correlation between exact and BP:", corr_bp[0])
         print("Correlation between exact and BP nonsparse:", corr_bpn[0])
+        print("Correlation between exact and tree BP:", corr_treebp[0])
 
-    def test_exact_against_mcmc(self):
+    def _test_exact_against_mcmc(self):
         sizes = [5, 10, 15]
         n_samples = [500, 1000, 2000, 5000, 10000]
         n_trials = 100
@@ -147,9 +159,9 @@ class TestInference(unittest.TestCase):
                     v2.extend([node_res[1] for node_res in graph_res])
 
                 corr_mcmc = pearsonr(v1, v2)
-                print(f"{size},{n_samp}: correlation between exact and MCMC: {corr_mcmc[0]}")
+                print("{},{}: correlation between exact and MCMC: {}".format(size, n_samp, corr_mcmc[0]))
 
-    def test_mcmc_runtimes(self):
+    def _test_mcmc_runtimes(self):
         sizes = [5, 15, 50, 500, 1000]
         n_samples = [500, 1000, 2000]
         n_trials = 10
@@ -170,7 +182,7 @@ class TestInference(unittest.TestCase):
                 t0 = time()
                 mcmc_res = mcmc.run(graphs, n_samp)
                 t = time() - t0
-                print(f"{size},{n_samp}: {t/10} seconds per graph")
+                print("{},{}: {} seconds per graph".format(size, n_samp, t/10))
 
 if __name__ == "__main__":
     unittest.main()

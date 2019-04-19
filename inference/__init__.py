@@ -10,6 +10,7 @@ from inference.bp_nonsparse import BeliefPropagation_nonsparse
 from inference.gnn_inference import GatedGNNInference
 from inference.exact import ExactInference
 from inference.mcmc import GibbsSampling
+from inference.bp_tree import TreeBP
 
 
 def get_algorithm(algo_name):
@@ -18,6 +19,8 @@ def get_algorithm(algo_name):
         return BeliefPropagation
     elif algo_name == "bp_nonsparse":
         return BeliefPropagation_nonsparse
+    elif algo_name == "tree_bp":
+        return TreeBP
     elif algo_name == "gnn_inference":
         return GatedGNNInference
     elif algo_name == "exact":

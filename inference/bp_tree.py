@@ -32,7 +32,7 @@ class TreeBP(Inference):
         messages = {edge: np.zeros(2) for edge in zip(row,col)}
         # create neighbors   d
         neighbors = {i:[] for i in range(n_V)}
-        for i,j in zip(row,col): neighbors_do[i].append(j)
+        for i,j in zip(row,col): neighbors[i].append(j)
         # randomly choose a node as root for tree
         root = random.choice(range(n_V))
 
@@ -54,7 +54,7 @@ class TreeBP(Inference):
             # calculate message from j to i 
             send_message(j,i)
 
-        def distribute(i,j) # distribute message from i to j
+        def distribute(i,j): # distribute message from i to j
             # calculate message from i to j
             send_message(i,j)
             # send message from j to all k except i
