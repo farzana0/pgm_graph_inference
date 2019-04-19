@@ -21,7 +21,7 @@ import numpy as np
 from pprint import pprint
 from time import time
 
-from graphical_models import construct_binary_mrf
+from graphical_models import construct_binary_mrf, BinaryMRF
 from inference import get_algorithm
 from labeling import LabelProp, LabelSG
 
@@ -36,6 +36,11 @@ def parse_dataset_args():
                         help='range of sizes, in the form "10_20"')
     parser.add_argument('--num', default=1, type=int,
                         help='number of graphs to generate')
+    # manage unlabeled/labeled data
+    parser.add_argument('--unlab_graphs_path', default='none',
+                        type=str, help='whether to use previously created unlabeled graphs.\
+                                        If `none`, creates new graphs. \
+                                        Else should be a path from base_data_dir')
     # should be used for train-test split
     parser.add_argument('--data_mode', default='train',
                         type=str, help='use train/val/test subdirectory of base_data_dir')
@@ -54,7 +59,41 @@ def parse_dataset_args():
     args = parser.parse_args()
     return args
 
+# Helpers ---------------------------------------------------------------------
+def save_graphs(graphs, labels, args):
+    # unlabeled data, save to its temporary address
+    if args.args == 'none':
+        Ws = [TODO]
+        bs = [TODO]
+        data = np.array([Ws, bs])
+        np.save(data, args.unlab_graphs_path)
+    # otherwise the data is prepared and should be saved
+    else:
+        for graph, res in zip(graphs, labels):
+            if args.mode == "marginal":
+                res_marginal, res_map = res, None
+            else:
+                res_marginal, res_map = None, res
 
+            directory = os.path.join(args.base_data_dir, args.data_mode,
+                                     graph.struct, str(graph.n_nodes))
+            os.makedirs(directory, exist_ok=True)
+            data = {"W": graph.W, "b": graph.b,
+                    "marginal": res_marginal, "map": res_map}
+            #pprint(data)
+
+            t = "_".join(str(time()).split("."))
+            path_to_graph = os.path.join(directory, t)
+            np.save(path_to_graph, data)
+
+def load_graphs(path):
+    Wb = np.load(path)
+    Ws, bs = Wb[0], Wb[1]
+    graphs = [BinaryMRF(W, b) for W, b in zip(Ws, bs)]
+    return graphs
+
+
+# Runner ----------------------------------------------------------------------
 if __name__=="__main__":
     # parse arguments and dataset name
     args = parse_dataset_args()
@@ -62,17 +101,19 @@ if __name__=="__main__":
     size_range = np.arange(int(low), int(high)+1)
 
     # construct graphical models
-    graphs = []
-    for _ in range(args.num):
-        # sample n_nodes from range
-        n_nodes = np.random.choice(size_range)
-        graphs.append(construct_binary_mrf(args.graph_struct, n_nodes))
+    if args.unlab_graphs_path == 'none':
+        graphs = []
+        for _ in range(args.num):
+            # sample n_nodes from range
+            n_nodes = np.random.choice(size_range)
+            graphs.append(construct_binary_mrf(args.graph_struct, n_nodes))
+    else:
+        graphs = load_graphs(args.use_graphs)
 
     # label them using a chosen algorithm
     if args.algo in ['exact', 'bp', 'mcmc']:
         algo_obj = get_algorithm(args.algo)(args.mode)
         list_of_res = algo_obj.run(graphs, verbose=args.verbose)
-
     # Propagate-from-subgraph algorithm (pt 2.2):
     elif args.algo.startswith('label_prop'):
         # e.g. label_prop_exact_10
@@ -81,29 +122,15 @@ if __name__=="__main__":
         inf_algo = get_algorithm(inf_algo_name)(args.mode)
         label_prop = LabelProp(sg_size, inf_algo)  # TODO: some other settings here
         list_of_res = label_prop.run(graphs, verbose=args.verbose)
-
     # Subgraph labeling algorithm (pt 2.1):
     elif args.algo == 'label_sg':
         raise NotImplementedError("TODO")
-
+    elif args.algo == 'none':
+        list_of_res = [None] * len(graphs)
     else:
         raise ValueError(f"Labeling algorithm {args.algo} not supported.")
 
-    # save to graphical_models/datasets
-    for graph, res in zip(graphs, list_of_res):
-        if args.mode == "marginal":
-            res_marginal, res_map = res, None
-        else:
-            res_marginal, res_map = None, res
-
-        directory = os.path.join(args.base_data_dir, args.data_mode,
-                                 graph.struct, str(graph.n_nodes))
-        os.makedirs(directory, exist_ok=True)
-        data = {"W": graph.W, "b": graph.b,
-                "marginal": res_marginal, "map": res_map}
-        #pprint(data)
-
-        t = "_".join(str(time()).split("."))
-        path_to_graph = os.path.join(directory, t)
-        np.save(path_to_graph, data)
+    # saves to final paths if labeled, otherwise to args.unlab_graphs_path
+    save_graphs(graphs, list_of_res, args)
+    
 
