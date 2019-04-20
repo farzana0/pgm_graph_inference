@@ -1,5 +1,4 @@
 """
-
 Data creation helpers and action.
 
 For creating data labels, one can use exact or approximate inference algorithms,
@@ -39,8 +38,8 @@ def parse_dataset_args():
     # manage unlabeled/labeled data
     parser.add_argument('--unlab_graphs_path', default='none',
                         type=str, help='whether to use previously created unlabeled graphs.\
-                                        If `none`, creates new graphs. \
-                                        Else should be a path from base_data_dir')
+                            If `none`, creates new graphs. \
+                            If non-`none`, should be a path from base_data_dir')
     # should be used for train-test split
     parser.add_argument('--data_mode', default='train',
                         type=str, help='use train/val/test subdirectory of base_data_dir')
@@ -59,14 +58,13 @@ def parse_dataset_args():
     args = parser.parse_args()
     return args
 
+
 # Helpers ---------------------------------------------------------------------
 def save_graphs(graphs, labels, args):
     # unlabeled data, save to its temporary address
-    if args.args == 'none':
-        Ws = [TODO]
-        bs = [TODO]
-        data = np.array([Ws, bs])
-        np.save(data, args.unlab_graphs_path)
+    if args.algo == 'none':
+        path = os.path.join(args.base_data_dir, args.unlab_graphs_path)
+        np.save(path + '.npy', graphs)
     # otherwise the data is prepared and should be saved
     else:
         for graph, res in zip(graphs, labels):
@@ -87,9 +85,7 @@ def save_graphs(graphs, labels, args):
             np.save(path_to_graph, data)
 
 def load_graphs(path):
-    Wb = np.load(path)
-    Ws, bs = Wb[0], Wb[1]
-    graphs = [BinaryMRF(W, b) for W, b in zip(Ws, bs)]
+    graphs = np.load(path)
     return graphs
 
 
@@ -101,14 +97,16 @@ if __name__=="__main__":
     size_range = np.arange(int(low), int(high)+1)
 
     # construct graphical models
-    if args.unlab_graphs_path == 'none':
+    # either new-data-generation or data labeling scenario
+    if args.unlab_graphs_path == 'none' or args.algo == 'none':
         graphs = []
         for _ in range(args.num):
             # sample n_nodes from range
             n_nodes = np.random.choice(size_range)
             graphs.append(construct_binary_mrf(args.graph_struct, n_nodes))
-    else:
-        graphs = load_graphs(args.use_graphs)
+    else:  # both are non-None: need to load data and label it
+        path = os.path.join(args.base_data_dir, args.unlab_graphs_path)
+        graphs = load_graphs(path + '.npy')
 
     # label them using a chosen algorithm
     if args.algo in ['exact', 'bp', 'mcmc']:
