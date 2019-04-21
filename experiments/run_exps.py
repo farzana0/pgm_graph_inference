@@ -3,11 +3,12 @@
 Runnable experiments module
 Authors: kkorovin@cs.cmu.edu
 
-TODO: need to match GNN parameters with those in train.py
-
+TODO:
+* make cmd argument parser to choose which exp to run
 """
 
 import os
+import argparse
 from time import time
 import numpy as np
 import matplotlib.pyplot as plt
@@ -50,6 +51,12 @@ def in_sample_experiment_map(struct):
     test_set_name  = struct + "_small"
     run_experiment(train_set_name, test_set_name, "map")
 
+# Large-scale experiments -----------------------------------------------------
+def approx_trees_experiment():
+    train_set_name = "trees_approx"
+    test_set_name = "trees_approx"
+    run_experiment(train_set_name, test_set_name, "marginal")
+
 # Runner ----------------------------------------------------------------------
 
 def run_experiment(train_set_name, test_set_name, inference_mode="marginal",
@@ -59,9 +66,9 @@ def run_experiment(train_set_name, test_set_name, inference_mode="marginal",
     """
     train_path = os.path.join(base_data_dir, "train")
     test_path = os.path.join(base_data_dir, "test")
-    model_load_path =os.path.join(model_base_dir, train_set_name)
+    model_load_path = os.path.join(model_base_dir, train_set_name)
 
-    # train_data = get_dataset_by_name(train_set_name, train_path)
+    train_data = get_dataset_by_name(train_set_name, train_path)
     test_data  = get_dataset_by_name(test_set_name, test_path, mode=inference_mode)
  
     # load model
@@ -167,10 +174,28 @@ def run_experiment(train_set_name, test_set_name, inference_mode="marginal",
 
     print("Runtimes", times)
 
+def parse_exp_args():
+    parser = argparse.ArgumentParser()
+    # critical arguments, change them
+    parser.add_argument('--exp_name', type=str,
+                        help='name of experiment to run')
+    args = parser.parse_args()
+    return args
+
 
 if __name__ == "__main__":
-    # in_sample_experiment(struct="path")
-    # out_of_sample_experiment("bipart")
-    # upscaling_experiment("fc")
-    in_sample_experiment_map(struct="fc")
+    args = parse_exp_args()
+    if args.exp_name == "in_sample":
+        in_sample_experiment(struct="path")
+    elif args.exp_name == "out_sample":
+        out_of_sample_experiment("bipart")
+    elif args.exp_name == "upscaling":
+        upscaling_experiment("fc")
+    elif args.exp_name == "in_sample_map":
+        in_sample_experiment_map(struct="fc")
+    elif args.exp_name == "trees_approx":
+        approx_trees_experiment()
+    # write your own experiment
+    else:
+        raise ValueError(f"Unrecognized experiment `{args.exp_name}`")
 

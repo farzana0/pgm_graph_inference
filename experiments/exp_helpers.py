@@ -45,6 +45,12 @@ data_specs.update({"path_large": {"path":  [25]},
                   "fc_large": {"fc": [25]}
                  })
 
+# Add experiments for part 2: Trees+BP
+data_specs.update({"trees_approx": {"random_tree":  [100]},
+                 })
+
+# TODO: add experiments for part 2: NonTrees+MCMC
+
 # Data loading ----------------------------------------------------------------
 def get_dataset_by_name(specs_name, data_dir, mode=None):
     """
@@ -65,7 +71,7 @@ def get_dataset_by_name(specs_name, data_dir, mode=None):
         mode - map or marginal
     """
     if specs_name not in data_specs:
-        raise ValueError("Specification {} not supported".format(exp_name))
+        raise ValueError("Specification {} not supported".format(specs_name))
     specs = data_specs[specs_name]
     graphs = []
     for struct in specs:

@@ -40,11 +40,16 @@ For imports to work correctly, add root of the repository to `PYTHONPATH` by run
 source setup.sh
 ```
 
+## Usage
+
 To generate data to reproduce experiments, run
 
 ```bash
 bash prepare_tree_experiment.sh  # for main experiment 1
 ```
+
+To train the GNN inference, use `train.py`. Finally, use `./experiments/run_exps.py` to specify the way to compare a trained GNN with other inference methods.
+
 
 ## References
 

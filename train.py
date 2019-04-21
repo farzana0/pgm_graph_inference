@@ -30,7 +30,7 @@ def parse_train_args():
     parser.add_argument('--mode', default='marginal', type=str,
                         help='type of inference to train GNN to perform')
     parser.add_argument('--epochs', default=1, type=int,
-                        help='number of epochs to train for')  # TODO: set default
+                        help='number of epochs to train for')
 
     # non-critical arguments, fine with default
     # model_name can be used for different hyperparameters later
