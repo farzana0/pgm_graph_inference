@@ -27,35 +27,29 @@ class TestInference(unittest.TestCase):
         labels = labelSG.partition_graph(graph, algorithm='igraph-label_propagation', verbose=True)
         labels = labelSG.partition_graph(graph, algorithm='igraph-optimal_modularity', verbose=True)
 
-
     def run_lbp_on_graph(self, graph):
         exact = get_algorithm("exact")("marginal")
 
         print("With subgraph of size 1")
-        lbp = LabelProp(1, exact)
+        lbp = LabelProp([1], exact)
         res = lbp.run([graph])
         true_res = exact.run([graph])
         mse_err = np.sqrt(np.sum(np.array(res) - np.array(true_res))**2)
         print(f"MSE error: {mse_err}")
 
         print("With subgraph of size 5")
-        lbp = LabelProp(5, exact)
+        lbp = LabelProp([5], exact)
         res = lbp.run([graph])
         true_res = exact.run([graph])
         mse_err = np.sqrt(np.sum(np.array(res) - np.array(true_res))**2)
         print(f"MSE error: {mse_err}")
 
         print("With subgraph of size 10")
-        lbp = LabelProp(10, exact)
+        lbp = LabelProp([10], exact)
         res = lbp.run([graph])
         true_res = exact.run([graph])
         mse_err = np.sqrt(np.sum(np.array(res) - np.array(true_res))**2)
         print(f"MSE error: {mse_err}")
-
-    def test_label_prop(self):
-        """ Testing marginal label_prop """
-        self.run_lbp_on_graph(self.graph_star)
-        self.run_lbp_on_graph(self.graph_fc)
 
     def run_tree_on_graph(self, graph):
         exact = get_algorithm("exact")("marginal")
@@ -66,13 +60,18 @@ class TestInference(unittest.TestCase):
         mse_err = np.sqrt(np.sum(np.array(res) - np.array(true_res))**2)
         print(f"MSE error: {mse_err}")
 
-    def test_tree_prop(self):
+    def test_label_prop(self):
+        """ Testing marginal label_prop """
+        self.run_lbp_on_graph(self.graph_star)
+        self.run_lbp_on_graph(self.graph_fc)
+
+    def _test_tree_prop(self):
         """ Testing tree-based generation """
         print("Trees:")
         self.run_tree_on_graph(self.graph_star)
         self.run_tree_on_graph(self.graph_fc)
 
-    def test_graph_cut(self):
+    def _test_graph_cut(self):
         """ Testing graph cut """
         self.run_lbp_subgraph(self.graph_barbell_50)
         self.run_lbp_subgraph(self.graph_cycle_50)

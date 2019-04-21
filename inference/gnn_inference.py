@@ -69,9 +69,6 @@ class GatedGNNInference(Inference):
 
     def train(self, dataset, optimizer, criterion, device):
         """ one epoch of training """
-
-        #TODO: exact probs need to be in dataset
-        # for i, graph,probs in enumerate(dataset,0):
         self.model.to(device)
         self.model.train()
         self.model.zero_grad()

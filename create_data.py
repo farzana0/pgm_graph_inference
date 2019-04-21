@@ -114,11 +114,11 @@ if __name__=="__main__":
         list_of_res = algo_obj.run(graphs, verbose=args.verbose)
     # Propagate-from-subgraph algorithm (pt 2.2):
     elif args.algo.startswith('label_prop'):
-        # e.g. label_prop_exact_10
-        inf_algo_name, sg_size = args.algo.split('_')[2:]
-        sg_size = int(sg_size)
+        # e.g. label_prop_exact_10_5
+        inf_algo_name, sg_sizes = args.algo.split('_')[2], args.algo.split('_')[3:]
+        sg_sizes = list(map(int, sg_sizes))
         inf_algo = get_algorithm(inf_algo_name)(args.mode)
-        label_prop = LabelProp(sg_size, inf_algo)  # TODO: some other settings here
+        label_prop = LabelProp(sg_sizes, inf_algo, max_iter=100)  # TODO: some other settings here
         list_of_res = label_prop.run(graphs, verbose=args.verbose)
     # Subgraph labeling algorithm (pt 2.1):
     elif args.algo == 'label_sg':
