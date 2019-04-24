@@ -20,12 +20,12 @@ then
     echo -e "\tStarting labeling with label propagation"
     rm -rf ./graphical_models/datasets/train/random_tree  # don't want duplicating graphs
     python create_data.py --graph_struct random_tree --size_range 100_100 \
-                          --num 1500 --data_mode train --mode marginal --algo label_prop_exact_10_5 \
+                          --num 1500 --data_mode train --mode marginal --algo label_prop_exact_10_10_10_10_10_10_10_10_10 \
                           --verbose True --unlab_graphs_path trees_train
 elif [ $1 == 'train' ]
 then
     echo -e "\tTraining your GNN"
-    python train.py --train_set_name trees_approx --mode marginal --epochs 10 --verbose True
+    python train.py --train_set_name trees_approx --mode marginal --epochs 5 --verbose True
 
 elif [ $1 == 'test' ]
 then

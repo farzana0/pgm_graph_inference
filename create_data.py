@@ -19,6 +19,7 @@ import argparse
 import numpy as np
 from pprint import pprint
 from time import time
+import matplotlib.pyplot as plt
 
 from graphical_models import construct_binary_mrf, BinaryMRF
 from inference import get_algorithm
@@ -118,8 +119,9 @@ if __name__=="__main__":
         inf_algo_name, sg_sizes = args.algo.split('_')[2], args.algo.split('_')[3:]
         sg_sizes = list(map(int, sg_sizes))
         inf_algo = get_algorithm(inf_algo_name)(args.mode)
-        label_prop = LabelProp(sg_sizes, inf_algo, max_iter=100)  # TODO: some other settings here
+        label_prop = LabelProp(sg_sizes, inf_algo, max_iter=30)  # TODO: some other settings here
         list_of_res = label_prop.run(graphs, verbose=args.verbose)
+
     # Subgraph labeling algorithm (pt 2.1):
     elif args.algo == 'label_sg':
         raise NotImplementedError("TODO")
