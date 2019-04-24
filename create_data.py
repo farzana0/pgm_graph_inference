@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 
 from graphical_models import construct_binary_mrf, BinaryMRF
 from inference import get_algorithm
-from labeling import LabelProp, LabelSG
+from labeling import LabelProp, LabelSG, LabelTree
 
 
 def parse_dataset_args():
@@ -113,18 +113,21 @@ if __name__=="__main__":
     if args.algo in ['exact', 'bp', 'mcmc']:
         algo_obj = get_algorithm(args.algo)(args.mode)
         list_of_res = algo_obj.run(graphs, verbose=args.verbose)
+
     # Propagate-from-subgraph algorithm (pt 2.2):
     elif args.algo.startswith('label_prop'):
         # e.g. label_prop_exact_10_5
         inf_algo_name, sg_sizes = args.algo.split('_')[2], args.algo.split('_')[3:]
         sg_sizes = list(map(int, sg_sizes))
         inf_algo = get_algorithm(inf_algo_name)(args.mode)
-        label_prop = LabelProp(sg_sizes, inf_algo, max_iter=30)  # TODO: some other settings here
+        label_prop = LabelProp(sg_sizes, inf_algo, max_iter=30)
         list_of_res = label_prop.run(graphs, verbose=args.verbose)
 
     # Subgraph labeling algorithm (pt 2.1):
-    elif args.algo == 'label_sg':
-        raise NotImplementedError("TODO")
+    elif args.algo == 'label_tree':
+        lbt = LabelTree(args.mode)
+        list_of_res = lbt.run(graphs, verbose=args.verbose)
+
     elif args.algo == 'none':
         list_of_res = [None] * len(graphs)
     else:

@@ -14,14 +14,23 @@ then
     python create_data.py --graph_struct random_tree --size_range 100_100 \
                           --num 1500 --data_mode train --mode marginal --algo none \
                           --verbose True --unlab_graphs_path trees_train
+
 elif [ $1 == 'make_labels' ]
 then
-    # make label-propagation labels for training, use format label_prop_exact_10
-    echo -e "\tStarting labeling with label propagation"
+    read -p 'Choose labeling algo: 1) label_prop_exact_n1_..., 2) label_sg (TODO), 3) label_tree  ' label_algo
+    if [ $label_algo == 'label_prop'* ]
+    then
+        #make label-propagation labels for training, use format label_prop_exact_10
+        echo -e "\tStarting labeling with label propagation"
+    elif [ $label_algo == 'label_tree' ]
+    then
+        echo -e "\tStarting labeling with spanning tree"
+    fi
     rm -rf ./graphical_models/datasets/train/random_tree  # don't want duplicating graphs
     python create_data.py --graph_struct random_tree --size_range 100_100 \
-                          --num 1500 --data_mode train --mode marginal --algo label_prop_exact_10_10_10_10_10_10_10_10_10 \
+                          --num 1500 --data_mode train --mode marginal --algo $label_algo \
                           --verbose True --unlab_graphs_path trees_train
+
 elif [ $1 == 'train' ]
 then
     echo -e "\tTraining your GNN"

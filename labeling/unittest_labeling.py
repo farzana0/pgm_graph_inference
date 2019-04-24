@@ -52,9 +52,7 @@ class TestInference(unittest.TestCase):
         print(f"MSE error: {mse_err}")
 
     def run_tree_on_graph(self, graph):
-        exact = get_algorithm("exact")("marginal")
-        lbt = LabelTree(exact)
-
+        lbt = LabelTree("marginal")
         res = lbt.run([graph])
         true_res = exact.run([graph])
         mse_err = np.sqrt(np.sum(np.array(res) - np.array(true_res))**2)
