@@ -97,8 +97,8 @@ def run_experiment(train_set_name, test_set_name, inference_mode="marginal",
 
     # TODO! don't forget to uncomment
     t0 = time()
-    # mcmc = get_algorithm("mcmc")(inference_mode)
-    # mcmc_res = mcmc.run(test_data)
+    mcmc = get_algorithm("mcmc")(inference_mode)
+    mcmc_res = mcmc.run(test_data)
     times["mcmc"] = (time()-t0) / len(test_data)
 
     #--- sanity check ----#
@@ -120,10 +120,10 @@ def run_experiment(train_set_name, test_set_name, inference_mode="marginal",
         for graph_res in bp_res:
             bp_labels.extend(list(m[1] for m in graph_res))
 
-        mcmc_labels = bp_labels  # TODO! don't forget to uncomment
-        # mcmc_labels = []
-        # for graph_res in mcmc_res:
-        #     mcmc_labels.extend(list(m[1] for m in graph_res))
+        #mcmc_labels = bp_labels  # TODO! don't forget to uncomment
+        mcmc_labels = []
+        for graph_res in mcmc_res:
+            mcmc_labels.extend(list(m[1] for m in graph_res))
 
         #--- sanity check ----#
         # exact_labels = []

@@ -128,6 +128,14 @@ if __name__=="__main__":
         lbt = LabelTree(args.mode)
         list_of_res = lbt.run(graphs, verbose=args.verbose)
 
+    elif args.algo.startswith('label_sg'):
+        algo_method = args.algo.split('_')[2]
+        # we will be using the default inf_algo
+        inf_algo_name = 'exact'
+        inf_algo = get_algorithm(inf_algo_name)(args.mode)
+        sg_labeler = LabelSG(inf_algo, algo_method)
+        list_of_res = sg_labeler.run(graphs, verbose=False)
+
     elif args.algo == 'none':
         list_of_res = [None] * len(graphs)
     else:

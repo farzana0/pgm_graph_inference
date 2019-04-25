@@ -17,11 +17,15 @@ then
 
 elif [ $1 == 'make_labels' ]
 then
-    read -p 'Choose labeling algo: 1) label_prop_exact_n1_..., 2) label_sg (TODO), 3) label_tree  ' label_algo
+    read -p 'Choose labeling algo: 1) label_prop_exact_n1_..., 2) label_sg_Louvain, 3) label_tree  ' label_algo
     if [ $label_algo == 'label_prop'* ]
     then
         #make label-propagation labels for training, use format label_prop_exact_10
         echo -e "\tStarting labeling with label propagation"
+    elif [ $label_algo == 'label_sg'* ]
+    then
+        #make label-propagation labels for training, use format label_sg_Louvain
+        echo -e "\tStarting labeling with subgraph labeling"
     elif [ $label_algo == 'label_tree' ]
     then
         echo -e "\tStarting labeling with spanning tree"
