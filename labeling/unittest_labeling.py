@@ -35,10 +35,10 @@ class TestInference(unittest.TestCase):
 
     def run_lbp_subgraph(self,graph,verbose=False):
         self.run_sg_with_method(graph, 'Louvain', verbose)
-        self.run_sg_with_method(graph, 'Girvan_newman', verbose)
-        self.run_sg_with_method(graph, 'igraph-community_infomap', verbose)
-        self.run_sg_with_method(graph, 'igraph-label_propagation', verbose)
-        self.run_sg_with_method(graph, 'igraph-optimal_modularity', verbose)
+        self.run_sg_with_method(graph, 'Girvan-newman', verbose)
+        self.run_sg_with_method(graph, 'igraph-community-infomap', verbose)
+        self.run_sg_with_method(graph, 'igraph-label-propagation', verbose)
+        self.run_sg_with_method(graph, 'igraph-optimal-modularity', verbose)
 
     def run_lbp_on_graph(self, graph):
         exact = get_algorithm("exact")("marginal")

@@ -2,8 +2,18 @@
 Subgraph labeling algorithm:
 splits a graph into k subgraphs and labels each individually.
 
-@author: markcheu@andrew.cmu.edu
+@author: markcheu@andrew.cmu.edu,
+		 kkorovin@cs.cmu.edu
+
+TODO:
+* if the algorithm is `exact`,
+  the communities with size >= 20 are unmanageable;
+  currently run_one() splits such communities in half,
+  so need to implement a smarter splitting method for
+  sizes >= 40 (on large-scale graphs very likely)
 """
+
+from inference import ExactInference
 
 from sklearn.cluster import spectral_clustering
 import numpy as np
@@ -11,6 +21,7 @@ import networkx as nx
 from networkx.algorithms import community as nx_community
 import matplotlib.pyplot as plt
 import community as com
+from tqdm import tqdm
 
 # requires installing igraph from https://igraph.org/python/#startpy:
 import igraph as ig
@@ -29,7 +40,18 @@ class LabelSG:
 		for i in set(partition.values()):
 			nodes_in_partition = [k for (k, v) in partition.items() if v ==  i]
 			subgraph = graph.get_subgraph_on_nodes(nodes_in_partition)
-			subgraph_res = self.inf_algo.run([subgraph])[0]
+			
+			if len(nodes_in_partition) <= 20 or (not isinstance(self.inf_algo, ExactInference)):
+				subgraph_res = self.inf_algo.run([subgraph])[0]
+			else:
+				# if a community is too big and we are using Exact inference, split it in half
+				subgraph_res = np.zeros((len(nodes_in_partition), 2))
+				n_list_1 = nodes_in_partition[:len(nodes_in_partition)//2]
+				n_list_2 = nodes_in_partition[len(nodes_in_partition)//2:]
+				subgraph1 = graph.get_subgraph_on_nodes(n_list_1)
+				subgraph2 = graph.get_subgraph_on_nodes(n_list_2)
+				subgraph_res[:len(nodes_in_partition)//2] = self.inf_algo.run([subgraph1])[0]
+				subgraph_res[len(nodes_in_partition)//2:] = self.inf_algo.run([subgraph2])[0]
 			result[nodes_in_partition] = subgraph_res
 		assert np.allclose(result.sum(axis=1), 1, 1e-5), result.sum(axis=1)
 		return result
@@ -43,6 +65,7 @@ class LabelSG:
 
 	# from https://github.com/taynaud/python-louvain
 	def partition_graph(self, graph, verbose=False):
+		N = graph.n_nodes
 		adj2 = graph.W
 		adj = np.copy(adj2)
 		nx_g = nx.Graph()  # networkx
@@ -64,12 +87,26 @@ class LabelSG:
 		if verbose:
 			print('Adjacency matrix: ', adj)
 
-		if self.algorithm=='Louvain':
+		if self.algorithm=='igraph-community-edge-betweenness':
+			n_cl = N//15
+			community = ig_g.community_edge_betweenness(clusters=n_cl).as_clustering(n_cl)
+			partition = self.partition_to_dict2(nx_g, community)
+			if verbose:
+				print('Partition by community community-edge-betweenness ', partition)
+
+		elif self.algorithm=='Louvain':
 			partition = com.best_partition(nx_g_unweighted,resolution=100000)
 			if verbose:
 				print('Partition by Louvain Algorithm: ', partition)
 				self.visualize_partition(nx_g_unweighted,partition)
-		elif self.algorithm=='Girvan_newman':
+		
+		elif self.algorithm=='igraph-community-infomap':
+			community = ig_g.community_infomap()
+			partition = self.partition_to_dict2(nx_g,community)
+			if verbose:
+				print('Partition by community infomap ', partition)
+
+		elif self.algorithm=='Girvan-newman':
 			communities_generator = nx_community.girvan_newman(nx_g)
 			top_level_communities = next(communities_generator)
 			next_level_communities = next(communities_generator)
@@ -77,26 +114,32 @@ class LabelSG:
 			partition = self.partition_to_dict(nx_g,partition_unorganized)
 			if verbose:
 				print('Partition by Girvan-Newman Algorithm: ', partition)
-		# for other choices, see https://igraph.org/python/doc/python-igraph.pdf, https://yoyoinwanderland.github.io/2017/08/08/Community-Detection-in-Python/
-		elif self.algorithm=='igraph-community_infomap':
+		
+		# for other choices, see https://igraph.org/python/doc/python-igraph.pdf, 
+		# https://yoyoinwanderland.github.io/2017/08/08/Community-Detection-in-Python/
+		elif self.algorithm=='igraph-community-infomap':
 			community = ig_g.community_infomap()
 			partition = self.partition_to_dict2(nx_g,community)
 			if verbose:
 				print('Partition by community infomap ', partition)
-		elif self.algorithm=='igraph-label_propagation':			
+		
+		elif self.algorithm=='igraph-label-propagation':			
 			community = ig_g.community_label_propagation()
 			partition = self.partition_to_dict2(nx_g,community)
 			if verbose:
 				print('Partition by label propagation ', partition)
-		elif self.algorithm=='igraph-optimal_modularity':
+		
+		elif self.algorithm=='igraph-optimal-modularity':
 			if nx_g.number_of_nodes() > 50:
 				raise ValueError('Too many nodes for the method.')
 			community = ig_g.community_optimal_modularity()  # for small graph
 			partition = self.partition_to_dict2(nx_g,community)
 			if verbose:
 				print('Partition by integer programming (optimal modularity)', partition)
+		
 		elif self.algorithm=='test':
 			print('GSP approach')
+		
 		else:
 			raise NotImplementedError("Partition {} not implemented yet.".format(self.algorithm))
 

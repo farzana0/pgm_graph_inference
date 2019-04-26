@@ -134,7 +134,7 @@ if __name__=="__main__":
         inf_algo_name = 'exact'
         inf_algo = get_algorithm(inf_algo_name)(args.mode)
         sg_labeler = LabelSG(inf_algo, algo_method)
-        list_of_res = sg_labeler.run(graphs, verbose=False)
+        list_of_res = sg_labeler.run(graphs, verbose=args.verbose)
 
     elif args.algo == 'none':
         list_of_res = [None] * len(graphs)
