@@ -100,6 +100,7 @@ if __name__=="__main__":
     # construct graphical models
     # either new-data-generation or data labeling scenario
     if args.unlab_graphs_path == 'none' or args.algo == 'none':
+        # create new graphs
         graphs = []
         for _ in range(args.num):
             # sample n_nodes from range

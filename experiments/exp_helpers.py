@@ -49,7 +49,11 @@ data_specs.update({"path_large": {"path":  [25]},
 data_specs.update({"trees_approx": {"random_tree":  [100]},
                  })
 
-# TODO: add experiments for part 2: NonTrees+MCMC
+# Add experiments for part 2: NonTrees+MCMC
+data_specs.update({"nontrees_approx": 
+                        {"barbell":  [100],
+                        "fc":  [100]}
+                 })
 
 # Data loading ----------------------------------------------------------------
 def get_dataset_by_name(specs_name, data_dir, mode=None):

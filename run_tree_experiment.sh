@@ -17,7 +17,7 @@ then
 
 elif [ $1 == 'make_labels' ]
 then
-    read -p 'Choose labeling algo: 1) label_prop_exact_n1_..., 2) label_sg_Louvain, 3) label_tree  ' label_algo
+    read -p 'Choose labeling algo: 1) label_prop_exact_n1_..., 2) label_sg_louvain, 3) label_tree  ' label_algo
     if [ $label_algo == 'label_prop'* ]
     then
         #make label-propagation labels for training, use format label_prop_exact_10

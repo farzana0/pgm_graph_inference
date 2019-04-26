@@ -57,6 +57,11 @@ def approx_trees_experiment():
     test_set_name = "trees_approx"
     run_experiment(train_set_name, test_set_name, "marginal")
 
+def approx_nontrees_experiment():
+    train_set_name = "nontrees_approx"
+    test_set_name = "nontrees_approx"
+    run_experiment(train_set_name, test_set_name, "marginal")
+
 # Runner ----------------------------------------------------------------------
 
 def run_experiment(train_set_name, test_set_name, inference_mode="marginal",
@@ -197,6 +202,8 @@ if __name__ == "__main__":
         in_sample_experiment_map(struct="fc")
     elif args.exp_name == "trees_approx":
         approx_trees_experiment()
+    elif args.exp_name == "nontrees_approx":
+        approx_nontrees_experiment()
     # write your own experiment
     else:
         raise ValueError(f"Unrecognized experiment `{args.exp_name}`")
