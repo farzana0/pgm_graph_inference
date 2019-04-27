@@ -140,16 +140,16 @@ def run_experiment(train_set_name, test_set_name, inference_mode="marginal",
         #     exact_labels.extend(list(m[1] for m in graph_res))
         #--- sanity check ----#
 
-        colors = []
-        for g in test_data:
-            colors.extend([g.struct] * g.n_nodes)
+        # colors = []
+        # for g in test_data:
+        #     colors.extend([g.struct] * g.n_nodes)
 
         # save these results
-        save_marginal_results(true_labels, gnn_labels, bp_labels, mcmc_labels, colors,
+        save_marginal_results(true_labels, gnn_labels, bp_labels, mcmc_labels,
             filename="./experiments/saved_exp_res/res_{}_{}".format(train_set_name, test_set_name))
 
         # plot them
-        plot_marginal_results(true_labels, gnn_labels, bp_labels, mcmc_labels, colors=colors,
+        plot_marginal_results(true_labels, gnn_labels, bp_labels, mcmc_labels,
             filename="./experiments/res_{}_{}.png".format(train_set_name, test_set_name))
 
     # MAP: only numeric
@@ -188,12 +188,38 @@ def parse_exp_args():
     args = parser.parse_args()
     return args
 
-def save_marginal_results(true_labels, gnn_labels, bp_labels, mcmc_labels, colors, filename):
+def save_marginal_results(true_labels, gnn_labels, bp_labels, mcmc_labels, filename, colors=None):
     res = {'true_labels': true_labels, 'gnn_labels': gnn_labels, 'bp_labels': bp_labels,
             'mcmc_labels': mcmc_labels, 'colors': colors}
     np.save(filename, res, allow_pickle=True)
 
-def plot_marginal_results(true_labels, gnn_labels, bp_labels, mcmc_labels, colors, filename):
+def plot_marginal_results(true_labels, gnn_labels, bp_labels, mcmc_labels, filename):
+    plt.title("Inference results")
+    plt.axis('off')
+    f, (ax1, ax2, ax3) = plt.subplots(1, 3, sharey=True, figsize=(30, 10))
+    ax1.set_title("GNN", fontsize=40)
+    ax1.set_xlim([0, 1])
+    ax1.set_ylim([0, 1])
+    ax1.scatter(true_labels, gnn_labels)
+
+    ax2.set_title("BP", fontsize=40)
+    ax2.set_xlim([0, 1])
+    ax2.set_ylim([0, 1])
+    ax2.scatter(true_labels, bp_labels)
+
+    ax3.set_title("MCMC", fontsize=40)
+    ax3.set_xlim([0, 1])
+    ax3.set_ylim([0, 1])
+    ax3.scatter(true_labels, mcmc_labels)
+
+    #--- sanity check ----#
+    #ax4.set_title("Exact (just a sanity check)")
+    #ax4.scatter(true_labels, exact_labels)
+    #--- sanity check ----#
+
+    plt.savefig(filename)
+
+def plot_marginal_results_with_colors(true_labels, gnn_labels, bp_labels, mcmc_labels, colors, filename):
     cols = ['red', 'green', 'blue', 'purple']
     map_to_col = {s: cols[i] for i,s in enumerate(list(set(colors)))}
 
@@ -201,38 +227,41 @@ def plot_marginal_results(true_labels, gnn_labels, bp_labels, mcmc_labels, color
     plt.axis('off')
     f, (ax1, ax2, ax3) = plt.subplots(1, 3, sharey=True, figsize=(30, 10))
     ax1.set_title("GNN", fontsize=40)
-    ax1.set_xticks([0, 1])
-    ax1.set_yticks([0, 1])
+    ax1.set_xlim([0, 1])
+    ax1.set_ylim([0, 1])
     for c in set(colors):
         # find labels that should be plotted
         true_ = [l for i, l in enumerate(true_labels) if colors[i] == c]
         algo_ = [l for i, l in enumerate(gnn_labels) if colors[i] == c]
         ax1.scatter(true_, algo_, c=map_to_col[c], label=c, alpha=0.3)
+    ax1.legend()
 
     ax2.set_title("BP", fontsize=40)
-    ax2.set_xticks([0, 1])
-    ax2.set_yticks([0, 1])
+    ax2.set_xlim([0, 1])
+    ax2.set_ylim([0, 1])
     # ax2.scatter(true_labels, bp_labels)
     for c in set(colors):
         # find labels that should be plotted
         true_ = [l for i, l in enumerate(true_labels) if colors[i] == c]
         algo_ = [l for i, l in enumerate(bp_labels) if colors[i] == c]
         ax2.scatter(true_, algo_, c=map_to_col[c], label=c, alpha=0.3)
+    ax2.legend()
 
     ax3.set_title("MCMC", fontsize=40)
-    ax3.set_xticks([0, 1])
-    ax3.set_yticks([0, 1])
+    ax3.set_xlim([0, 1])
+    ax3.set_ylim([0, 1])
     for c in set(colors):
         # find labels that should be plotted
         true_ = [l for i, l in enumerate(true_labels) if colors[i] == c]
         algo_ = [l for i, l in enumerate(mcmc_labels) if colors[i] == c]
         ax3.scatter(true_, algo_, c=map_to_col[c], label=c, alpha=0.3)
-    
+    ax3.legend()
+
     #--- sanity check ----#
     #ax4.set_title("Exact (just a sanity check)")
     #ax4.scatter(true_labels, exact_labels)
     #--- sanity check ----#
-    plt.legend()
+
     plt.savefig(filename)
 
 
@@ -258,8 +287,8 @@ if __name__ == "__main__":
         gnn_labels = data['gnn_labels']
         bp_labels = data['bp_labels']
         mcmc_labels = data['mcmc_labels']
-        colors = data['colors']
-        plot_marginal_results(true_labels, gnn_labels, bp_labels, mcmc_labels, colors, filename)
+        # colors = data['colors']
+        plot_marginal_results(true_labels, gnn_labels, bp_labels, mcmc_labels, filename)
     else:
         raise ValueError(f"Unrecognized experiment `{args.exp_name}`")
 
