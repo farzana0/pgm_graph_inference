@@ -65,7 +65,7 @@ def save_graphs(graphs, labels, args):
     # unlabeled data, save to its temporary address
     if args.algo == 'none':
         path = os.path.join(args.base_data_dir, args.unlab_graphs_path)
-        np.save(path + '.npy', graphs)
+        np.save(path + '.npy', graphs, allow_pickle=True)
     # otherwise the data is prepared and should be saved
     else:
         for graph, res in zip(graphs, labels):

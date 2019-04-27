@@ -5,6 +5,9 @@ Authors: kkorovin@cs.cmu.edu
 
 TODO:
 * make cmd argument parser to choose which exp to run
+
+NOTE:
+* m[0] = p(-1), m[1] = p(+1)
 """
 
 import os
@@ -12,6 +15,7 @@ import argparse
 from time import time
 import numpy as np
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 font = {'family' : 'normal',
         'weight' : 'bold',
@@ -136,21 +140,17 @@ def run_experiment(train_set_name, test_set_name, inference_mode="marginal",
         #     exact_labels.extend(list(m[1] for m in graph_res))
         #--- sanity check ----#
 
-        plt.title("Inference results")
-        #fig, axes = plt.subplots(nrows=1, ncols=3)
-        f, (ax1, ax2, ax3) = plt.subplots(1, 3, sharey=True, figsize=(30, 10))
-        ax1.set_title("GNN", fontsize=40)
-        ax1.scatter(true_labels, gnn_labels)
-        ax2.set_title("BP", fontsize=40)
-        ax2.scatter(true_labels, bp_labels)
-        ax3.set_title("MCMC", fontsize=40)
-        ax3.scatter(true_labels, mcmc_labels)
+        colors = []
+        for g in test_data:
+            colors.extend([g.struct] * g.n_nodes)
 
-        #--- sanity check ----#
-        #ax4.set_title("Exact (just a sanity check)")
-        #ax4.scatter(true_labels, exact_labels)
-        #--- sanity check ----#
-        plt.savefig("./experiments/res_{}_{}.png".format(train_set_name, test_set_name))
+        # save these results
+        save_marginal_results(true_labels, gnn_labels, bp_labels, mcmc_labels, colors,
+            filename="./experiments/saved_exp_res/res_{}_{}".format(train_set_name, test_set_name))
+
+        # plot them
+        plot_marginal_results(true_labels, gnn_labels, bp_labels, mcmc_labels, colors=colors,
+            filename="./experiments/res_{}_{}.png".format(train_set_name, test_set_name))
 
     # MAP: only numeric
     else:
@@ -178,7 +178,6 @@ def run_experiment(train_set_name, test_set_name, inference_mode="marginal",
         mcmc_accuracy = np.mean(true_labels == mcmc_labels)
 
         print("Accuracies: GNN {}, BP {}, MCMC {}".format(gnn_accuracy, bp_accuracy, mcmc_accuracy))
-
     print("Runtimes", times)
 
 def parse_exp_args():
@@ -188,6 +187,53 @@ def parse_exp_args():
                         help='name of experiment to run')
     args = parser.parse_args()
     return args
+
+def save_marginal_results(true_labels, gnn_labels, bp_labels, mcmc_labels, colors, filename):
+    res = {'true_labels': true_labels, 'gnn_labels': gnn_labels, 'bp_labels': bp_labels,
+            'mcmc_labels': mcmc_labels, 'colors': colors}
+    np.save(filename, res, allow_pickle=True)
+
+def plot_marginal_results(true_labels, gnn_labels, bp_labels, mcmc_labels, colors, filename):
+    cols = ['red', 'green', 'blue', 'purple']
+    map_to_col = {s: cols[i] for i,s in enumerate(list(set(colors)))}
+
+    plt.title("Inference results")
+    plt.axis('off')
+    f, (ax1, ax2, ax3) = plt.subplots(1, 3, sharey=True, figsize=(30, 10))
+    ax1.set_title("GNN", fontsize=40)
+    ax1.set_xticks([0, 1])
+    ax1.set_yticks([0, 1])
+    for c in set(colors):
+        # find labels that should be plotted
+        true_ = [l for i, l in enumerate(true_labels) if colors[i] == c]
+        algo_ = [l for i, l in enumerate(gnn_labels) if colors[i] == c]
+        ax1.scatter(true_, algo_, c=map_to_col[c], label=c, alpha=0.3)
+
+    ax2.set_title("BP", fontsize=40)
+    ax2.set_xticks([0, 1])
+    ax2.set_yticks([0, 1])
+    # ax2.scatter(true_labels, bp_labels)
+    for c in set(colors):
+        # find labels that should be plotted
+        true_ = [l for i, l in enumerate(true_labels) if colors[i] == c]
+        algo_ = [l for i, l in enumerate(bp_labels) if colors[i] == c]
+        ax2.scatter(true_, algo_, c=map_to_col[c], label=c, alpha=0.3)
+
+    ax3.set_title("MCMC", fontsize=40)
+    ax3.set_xticks([0, 1])
+    ax3.set_yticks([0, 1])
+    for c in set(colors):
+        # find labels that should be plotted
+        true_ = [l for i, l in enumerate(true_labels) if colors[i] == c]
+        algo_ = [l for i, l in enumerate(mcmc_labels) if colors[i] == c]
+        ax3.scatter(true_, algo_, c=map_to_col[c], label=c, alpha=0.3)
+    
+    #--- sanity check ----#
+    #ax4.set_title("Exact (just a sanity check)")
+    #ax4.scatter(true_labels, exact_labels)
+    #--- sanity check ----#
+    plt.legend()
+    plt.savefig(filename)
 
 
 if __name__ == "__main__":
@@ -204,7 +250,18 @@ if __name__ == "__main__":
         approx_trees_experiment()
     elif args.exp_name == "nontrees_approx":
         approx_nontrees_experiment()
-    # write your own experiment
+    elif args.exp_name.startswith('res'):
+        path = f"./experiments/saved_exp_res/{args.exp_name}.npy"
+        filename = f"./experiments/{args.exp_name}.png"
+        data = np.load(path, allow_pickle=True)[()]
+        true_labels = data['true_labels']
+        gnn_labels = data['gnn_labels']
+        bp_labels = data['bp_labels']
+        mcmc_labels = data['mcmc_labels']
+        colors = data['colors']
+        plot_marginal_results(true_labels, gnn_labels, bp_labels, mcmc_labels, colors, filename)
     else:
         raise ValueError(f"Unrecognized experiment `{args.exp_name}`")
+
+
 

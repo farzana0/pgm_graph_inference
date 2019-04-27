@@ -87,10 +87,11 @@ def get_dataset_by_name(specs_name, data_dir, mode=None):
             for filename in os.listdir(directory):
                 if filename.endswith(".npy"):
                     path_to_graph = os.path.join(directory, filename)
-                    data_dict = np.load(path_to_graph)[()]  # funny indexing
+                    data_dict = np.load(path_to_graph, allow_pickle=True)[()]  # funny indexing
                     graph = BinaryMRF(data_dict["W"], data_dict["b"])
                     graph.set_ground_truth(marginal_est=data_dict["marginal"],
                                            map_est=data_dict["map"])
+                    graph.struct = struct
                     graphs.append(graph)
 
     if mode is not None:

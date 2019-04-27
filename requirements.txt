@@ -3,5 +3,5 @@ scipy
 torch
 torchvision
 tqdm
-networkx
+networkx>=2.3
 python-igraph

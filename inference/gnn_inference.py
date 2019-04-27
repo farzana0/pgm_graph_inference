@@ -43,6 +43,7 @@ class GatedGNNInference(Inference):
                     loc: storage))
             self.model.eval()
         self.history = {"loss": []}
+        self.batch_size = 50
 
     def run_one(self, graph, device):
         """ Forward computation that depends on the mode """
@@ -56,7 +57,7 @@ class GatedGNNInference(Inference):
             out = self.model(J,b)
             return out.detach().cpu().numpy()
 
-    def run(self, graphs, device,  verbose=False):
+    def run(self, graphs, device, verbose=False):
         self.verbose = verbose
         res = []
         graph_iterator = tqdm(graphs) if self.verbose else graphs
@@ -68,7 +69,8 @@ class GatedGNNInference(Inference):
         torch.save(self.model.state_dict(), path)
 
     def train(self, dataset, optimizer, criterion, device):
-        """ one epoch of training """
+        """ One epoch of training """
+        # TODO: set self.batch_size depending on device type
         self.model.to(device)
         self.model.train()
         self.model.zero_grad()
@@ -91,7 +93,7 @@ class GatedGNNInference(Inference):
 
             batch_loss.append(loss)
 
-            if(i%50==0):
+            if (i % self.batch_size == 0):
                 ll_mean = torch.stack(batch_loss).mean()
                 ll_mean.backward()
                 optimizer.step()
