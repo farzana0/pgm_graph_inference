@@ -66,6 +66,16 @@ def approx_nontrees_experiment():
     test_set_name = "nontrees_approx"
     run_experiment(train_set_name, test_set_name, "marginal")
 
+def approx_barbell_experiment():
+    train_set_name = "barbell_approx"
+    test_set_name = "barbell_approx"
+    run_experiment(train_set_name, test_set_name, "marginal")
+
+def approx_fc_experiment():
+    train_set_name = "fc_approx"
+    test_set_name = "fc_approx"
+    run_experiment(train_set_name, test_set_name, "marginal")
+
 # Runner ----------------------------------------------------------------------
 
 def run_experiment(train_set_name, test_set_name, inference_mode="marginal",
@@ -149,8 +159,8 @@ def run_experiment(train_set_name, test_set_name, inference_mode="marginal",
             filename="./experiments/saved_exp_res/res_{}_{}".format(train_set_name, test_set_name))
 
         # plot them
-        plot_marginal_results(true_labels, gnn_labels, bp_labels, mcmc_labels,
-            filename="./experiments/res_{}_{}.png".format(train_set_name, test_set_name))
+        plot_marginal_results_individual(true_labels, gnn_labels, bp_labels, mcmc_labels,
+            filename="./experiments/res_{}_{}".format(train_set_name, test_set_name))
 
     # MAP: only numeric
     else:
@@ -192,6 +202,28 @@ def save_marginal_results(true_labels, gnn_labels, bp_labels, mcmc_labels, filen
     res = {'true_labels': true_labels, 'gnn_labels': gnn_labels, 'bp_labels': bp_labels,
             'mcmc_labels': mcmc_labels, 'colors': colors}
     np.save(filename, res, allow_pickle=True)
+
+def plot_marginal_results_individual(true_labels, gnn_labels, bp_labels, mcmc_labels, filename):
+    fsize=(10,10)
+    col = 'purple'
+
+    def plot_one(true, algo, prefix):
+        fig = plt.figure(figsize=fsize)
+        ax=fig.add_subplot(1,1,1)
+        plt.axis('off')
+        plt.xlim([0, 1])
+        plt.ylim([0, 1])
+        diag = np.linspace(0,1,num=200)
+        plt.scatter(true, algo,c=col)
+        plt.plot(diag,diag,c='red')
+        extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+        plt.savefig(filename+prefix, bbox_inches=extent, pad_inches=0)
+        plt.clf()
+
+    plot_one(true_labels, gnn_labels, '_gnn')
+    plot_one(true_labels, bp_labels, '_bp')
+    plot_one(true_labels, mcmc_labels, '_mcmc')
+
 
 def plot_marginal_results(true_labels, gnn_labels, bp_labels, mcmc_labels, filename):
     plt.title("Inference results")
@@ -279,16 +311,20 @@ if __name__ == "__main__":
         approx_trees_experiment()
     elif args.exp_name == "nontrees_approx":
         approx_nontrees_experiment()
+    elif args.exp_name == "barbell_approx":
+        approx_barbell_experiment()
+    elif args.exp_name == "fc_approx":
+        approx_fc_experiment()
     elif args.exp_name.startswith('res'):
         path = f"./experiments/saved_exp_res/{args.exp_name}.npy"
-        filename = f"./experiments/{args.exp_name}.png"
+        filename = f"./experiments/{args.exp_name}"
         data = np.load(path, allow_pickle=True)[()]
         true_labels = data['true_labels']
         gnn_labels = data['gnn_labels']
         bp_labels = data['bp_labels']
         mcmc_labels = data['mcmc_labels']
         # colors = data['colors']
-        plot_marginal_results(true_labels, gnn_labels, bp_labels, mcmc_labels, filename)
+        plot_marginal_results_individual(true_labels, gnn_labels, bp_labels, mcmc_labels, filename)
     else:
         raise ValueError(f"Unrecognized experiment `{args.exp_name}`")
 
