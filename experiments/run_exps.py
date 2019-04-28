@@ -215,7 +215,7 @@ def plot_marginal_results_individual(true_labels, gnn_labels, bp_labels, mcmc_la
         plt.ylim([0, 1])
         diag = np.linspace(0,1,num=200)
         plt.scatter(true, algo, s=7, c=col, alpha=0.3)
-        plt.plot(diag,diag,c='red',linewidth=3)
+        plt.plot(diag,diag,c='red',linewidth=3, alpha=0.7)
         extent = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
         plt.savefig(filename+prefix, bbox_inches=extent, pad_inches=0)
         plt.clf()
