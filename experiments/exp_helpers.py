@@ -52,7 +52,11 @@ data_specs.update({"trees_approx": {"random_tree":  [100]},
 # Add experiments for part 2: NonTrees+MCMC
 data_specs.update({"nontrees_approx": 
                         {"barbell":  [100],
-                        "fc":  [100]}
+                        "fc":  [100]},
+                    "barbell_approx": 
+                        {"barbell":  [100]},
+                    "fc_approx": 
+                        {"fc":  [100]}
                  })
 
 # Data loading ----------------------------------------------------------------
