@@ -299,8 +299,9 @@ def plot_marginal_results_with_colors(true_labels, gnn_labels, bp_labels, mcmc_l
 
 if __name__ == "__main__":
     args = parse_exp_args()
-    if args.exp_name == "in_sample":
-        in_sample_experiment(struct="path")
+    if args.exp_name.startswith("in_sample"):
+        struct = args.exp_name[len("in_sample_"):]
+        in_sample_experiment(struct=struct)
     elif args.exp_name == "out_sample":
         out_of_sample_experiment("bipart")
     elif args.exp_name == "upscaling":
