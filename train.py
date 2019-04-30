@@ -20,6 +20,29 @@ from experiments.exp_helpers import get_dataset_by_name
 from inference import get_algorithm
 from constants import *
 
+# Loss computer objects that let us save a little on creating objects----------
+class CrossEntropyComputer:
+    def __init__(self):
+        self.computer = nn.BCELoss()
+
+    def __call__(self, output_probs, targets):
+        return self.computer(output_probs, targets)
+
+class KLDivLossComputer:
+    def __init__(self):
+        self.computer = nn.KLDivLoss()
+    
+    def __call__(self, output_probs, targets):
+        logits = torch.log(output_probs)
+        return self.computer(logits, targets)
+
+class CrossEntropyMAPComputer:
+    def __init__(self):
+        self.computer = nn.BCELoss()
+
+    def __call__(self, output_probs, targets):
+        return self.computer(output_probs[:, 1], targets)
+
 
 def parse_train_args():
     parser = argparse.ArgumentParser()
@@ -78,10 +101,10 @@ if __name__ == "__main__":
     optimizer = Adam(gnn_inference.model.parameters(), lr=learning_rate)
 
     if args.mode == "marginal":
-        criterion = nn.KLDivLoss()
+        # criterion = KLDivLossComputer()
+        criterion = CrossEntropyComputer()
     else:
-        criterion = nn.BCELoss()
-    # criterion = nn.MSELoss()
+        criterion = CrossEntropyMAPComputer()
 
     for epoch in range(epochs):
         gnn_inference.train(dataset, optimizer, criterion, DEVICE)
