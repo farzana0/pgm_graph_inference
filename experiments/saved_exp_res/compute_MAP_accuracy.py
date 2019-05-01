@@ -20,17 +20,17 @@ if __name__ == "__main__":
     # print(data['true_labels'])
 
     MAP_true = np.array(data['true_labels']) > args.map_threshold
-
-    GNN_true = np.array(data['gnn_labels']) > args.map_threshold
-
-    BP_true = np.array(data['bp_labels']) > args.map_threshold
-    MCMC_true = np.array(data['mcmc_labels']) > args.map_threshold
-
     number_of_samples =MAP_true.shape[0]
 
+
+    GNN_true = np.array(data['gnn_labels']) > args.map_threshold
     print('GNN MAP Accuracy: ', np.sum(GNN_true==MAP_true)/number_of_samples)
 
-    print('BP MAP Accuracy: ', np.sum(BP_true==MAP_true)/number_of_samples)
+    if('bp_labels' in data):
+        BP_true = np.array(data['bp_labels']) > args.map_threshold
+        print('BP MAP Accuracy: ', np.sum(BP_true==MAP_true)/number_of_samples)
 
-    print('MCMC MAP Accuracy: ', np.sum(MCMC_true==MAP_true)/number_of_samples)
+    if('mcmc_labels' in data):
+        MCMC_true = np.array(data['mcmc_labels']) > args.map_threshold
+        print('MCMC MAP Accuracy: ', np.sum(MCMC_true==MAP_true)/number_of_samples)
 

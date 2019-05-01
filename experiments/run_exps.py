@@ -35,11 +35,11 @@ def in_sample_experiment(struct):
     test_set_name  = struct + "_small"
     run_experiment(train_set_name, test_set_name)
 
-def out_of_sample_experiment(struct):
+def out_of_sample_experiment(struct,struct2):
     """ Test generalization to same- and different- structure
         larger graphs """
-    train_set_name = struct + "_small"
-    test_set_name = struct + "_medium" # "conn_medium", "trees_medium"
+    train_set_name = struct #+ "_small"
+    test_set_name = struct2 #+ "_medium" # "conn_medium", "trees_medium"
     run_experiment(train_set_name, test_set_name)
 
 def upscaling_experiment(struct):
@@ -303,9 +303,9 @@ if __name__ == "__main__":
         struct = args.exp_name[len("in_sample_"):]
         in_sample_experiment(struct=struct)
     elif args.exp_name == "out_sample":
-        out_of_sample_experiment("bipart")
+        out_of_sample_experiment("fc_small","fc_small")
     elif args.exp_name == "upscaling":
-        upscaling_experiment("fc")
+        upscaling_experiment("barbell")
     elif args.exp_name == "in_sample_map":
         in_sample_experiment_map(struct="fc")
     elif args.exp_name == "trees_approx":
