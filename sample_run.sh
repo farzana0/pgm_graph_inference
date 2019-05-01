@@ -21,4 +21,4 @@ echo -e "Generate plots for bp, MCMC, and GNN for the given experiment in experi
 python ./experiments/run_exps.py --exp_name in_sample_path
 
 echo -e "compute MAP for bp, MCMC, and gnn"
-python ./experiments/saved_exp_res/compute_MAP_accuracy --data_file res_path_small_path_small.npy
+python ./experiments/saved_exp_res/compute_MAP_accuracy.py --data_file ./experiments/saved_exp_res/res_path_small_path_small.npy
