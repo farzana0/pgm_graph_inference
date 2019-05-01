@@ -85,11 +85,11 @@ class GatedGNNInference(Inference):
 
             if self.mode == "marginal":
                 target = torch.from_numpy(graph.marginal).float().to(device)
-                loss = criterion(torch.log(out), target)
+                loss = criterion(out, target)
             else:
                 map_bin = np.where(graph.map > 0.1, 1, 0)
                 target = torch.from_numpy(map_bin).float().to(device)
-                loss = criterion(out[:, 1], target)  # bce
+                loss = criterion(out, target)  # bce
 
             batch_loss.append(loss)
 
