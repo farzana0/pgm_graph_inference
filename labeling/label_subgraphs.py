@@ -60,7 +60,7 @@ class LabelSG:
         res = []
         graph_iterator = tqdm(graphs) if verbose else graphs
         for graph in graph_iterator:
-            res.append(self.run_one(graph, verbose=False))
+            res.append(self.run_one(graph, verbose=verbose))
         return res
 
     # from https://github.com/taynaud/python-louvain
@@ -95,10 +95,10 @@ class LabelSG:
                 print('Partition by community community-edge-betweenness ', partition)
 
         elif self.algorithm == 'louvain':
-            partition = com.best_partition(nx_g_unweighted,resolution=100000)
+            partition = com.best_partition(nx_g_unweighted,resolution=1)
             if verbose:
                 print('Partition by Louvain Algorithm: ', partition)
-                self.visualize_partition(nx_g_unweighted,partition)
+                # self.visualize_partition(nx_g_unweighted,partition)
 
         elif self.algorithm=='girvan-newman':
             communities_generator = nx_community.girvan_newman(nx_g)
@@ -109,19 +109,19 @@ class LabelSG:
             if verbose:
                 print('Partition by Girvan-Newman Algorithm: ', partition)
 
-        elif self.algorithm == 'infomap':
+        elif self.algorithm == 'igraph-community-infomap':
             community = ig_g.community_infomap()
             partition = self.partition_to_dict2(nx_g,community)
             if verbose:
                 print('Partition by community infomap ', partition)
 
-        elif self.algorithm == 'label-prop':            
+        elif self.algorithm == 'igraph-label-propagation':            
             community = ig_g.community_label_propagation()
             partition = self.partition_to_dict2(nx_g,community)
             if verbose:
                 print('Partition by label propagation ', partition)
 
-        elif self.algorithm == 'opt-modularity':
+        elif self.algorithm == 'igraph-optimal-modularity':
             if nx_g.number_of_nodes() > 50:
                 raise ValueError('Too many nodes for the method.')
             community = ig_g.community_optimal_modularity()  # for small graph
