@@ -68,6 +68,10 @@ class GatedGNNInference(Inference):
     def save_model(self, path):
         torch.save(self.model.state_dict(), path)
 
+    def load_model(self, path):
+        state_dict = torch.load(path)
+        self.model.load_state_dict(state_dict)
+
     def train(self, dataset, optimizer, criterion, device):
         """ One epoch of training """
         # TODO: set self.batch_size depending on device type

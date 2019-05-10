@@ -6,3 +6,4 @@ inference/pretrained/
 .DS_Store
 *.ipynb
 **/*.png
+sftp-config.json

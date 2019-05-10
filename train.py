@@ -63,6 +63,8 @@ def parse_train_args():
                         type=str, help='directory to load training data from')
     parser.add_argument('--model_dir', default='./inference/pretrained',
                         type=str, help='directory to save a trained model')
+    parser.add_argument('--use_pretrained', default='none',
+                        type=str, help='use pretrained model')
     parser.add_argument('--verbose', default=False, type=bool,
                         help='whether to display training statistics')
 
@@ -77,6 +79,12 @@ if __name__ == "__main__":
 
     dataset = get_dataset_by_name(args.train_set_name, args.data_dir, 
                                   mode=args.mode)
+    os.makedirs(args.model_dir, exist_ok=True)
+    if args.model_name == "default":
+        model_path = os.path.join(args.model_dir, args.train_set_name)
+    else:
+        model_path = os.path.join(args.model_dir, args.model_name)
+
     # # filter by mode:
     # if args.mode =="marginal":
     #     dataset = [g for g in dataset if g.marginal is not None]
@@ -98,6 +106,10 @@ if __name__ == "__main__":
     gnn_inference = gnn_constructor(args.mode, n_hidden_states, 
                                     message_dim_P,hidden_unit_message_dim,
                                     hidden_unit_readout_dim, T, sparse=USE_SPARSE_GNN)
+    if args.use_pretrained != 'none':
+        model_path_pre = os.path.join(args.model_dir, args.use_pretrained)
+        gnn_inference.load_model(model_path_pre)
+        print(f"Model loaded from {model_path_pre}")
     optimizer = Adam(gnn_inference.model.parameters(), lr=learning_rate)
 
     if args.mode == "marginal":
@@ -108,12 +120,6 @@ if __name__ == "__main__":
 
     for epoch in range(epochs):
         gnn_inference.train(dataset, optimizer, criterion, DEVICE)
-
-        os.makedirs(args.model_dir, exist_ok=True)
-        if args.model_name == "default":
-            model_path = os.path.join(args.model_dir, args.train_set_name)
-        else:
-            model_path = os.path.join(args.model_dir, args.model_name)
         gnn_inference.save_model(model_path)
 
     print("Model saved in {}".format(model_path))
