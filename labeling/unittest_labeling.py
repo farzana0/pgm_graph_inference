@@ -19,26 +19,28 @@ class TestInference(unittest.TestCase):
                                         shuffle_nodes=False)
         self.graph_fc = construct_binary_mrf("fc", n_nodes=10,
                                             shuffle_nodes=False)
-        self.graph_barbell_50 = construct_binary_mrf("barbell", n_nodes=15,
+        self.graph_barbell_100 = construct_binary_mrf("barbell", n_nodes=100,
                                         shuffle_nodes=False)
-        self.graph_cycle_50 = construct_binary_mrf("cycle", n_nodes=15,
+        self.graph_cycle_100 = construct_binary_mrf("cycle", n_nodes=100,
                                             shuffle_nodes=False)
     
     def run_sg_with_method(self, graph, algorithm, verbose):
         exact = get_algorithm("exact")("marginal")
-        labelSG = LabelSG(algorithm=algorithm, inf_algo=exact)
-        true_res = exact.run([graph])
+        mcmc = get_algorithm("mcmc")("marginal")
+
+        labelSG = LabelSG(algorithm=algorithm, inf_algo=mcmc)
+        true_res = mcmc.run([graph])
         t0 = time()
         res = labelSG.run([graph], verbose=verbose)
         mse_err = np.sqrt(np.sum(np.array(res) - np.array(true_res))**2)
         print(f"Partition {algorithm} MSE error: \t{mse_err} in \t{time()-t0} seconds")
 
     def run_lbp_subgraph(self,graph,verbose=False):
-        self.run_sg_with_method(graph, 'Louvain', verbose)
-        self.run_sg_with_method(graph, 'Girvan-newman', verbose)
+        self.run_sg_with_method(graph, 'louvain', verbose)
+        self.run_sg_with_method(graph, 'girvan-newman', verbose)
         self.run_sg_with_method(graph, 'igraph-community-infomap', verbose)
         self.run_sg_with_method(graph, 'igraph-label-propagation', verbose)
-        self.run_sg_with_method(graph, 'igraph-optimal-modularity', verbose)
+        # self.run_sg_with_method(graph, 'igraph-optimal-modularity', verbose)
 
     def run_lbp_on_graph(self, graph):
         exact = get_algorithm("exact")("marginal")
@@ -84,8 +86,10 @@ class TestInference(unittest.TestCase):
 
     def test_graph_cut(self):
         """ Testing graph cut """
-        self.run_lbp_subgraph(self.graph_barbell_50)
-        self.run_lbp_subgraph(self.graph_cycle_50)
+        print('barbell')
+        self.run_lbp_subgraph(self.graph_barbell_100,True)
+        print('graph cycle')
+        self.run_lbp_subgraph(self.graph_cycle_100,True)
 
 
 if __name__ == "__main__":
