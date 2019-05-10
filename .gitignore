@@ -7,3 +7,4 @@ experiments/saved_exp_res/
 .DS_Store
 *.ipynb
 **/*.png
+sftp-config.json

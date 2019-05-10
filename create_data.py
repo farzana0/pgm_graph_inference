@@ -86,7 +86,7 @@ def save_graphs(graphs, labels, args):
             np.save(path_to_graph, data)
 
 def load_graphs(path):
-    graphs = np.load(path)
+    graphs = np.load(path, allow_pickle=True)
     return graphs
 
 
