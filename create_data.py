@@ -24,7 +24,7 @@ import matplotlib.pyplot as plt
 from graphical_models import construct_binary_mrf, BinaryMRF
 from inference import get_algorithm
 from labeling import LabelProp, LabelSG, LabelTree
-
+import tqdm
 
 def parse_dataset_args():
     parser = argparse.ArgumentParser()
