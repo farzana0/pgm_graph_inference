@@ -41,12 +41,13 @@ data_specs.update({"trees_medium": {"star": [15, 16, 17],
                                     "fc": [15, 16, 17],
                                     },
                   })
-data_specs.update({"path_large": {"path":  [15,16,17]},
+data_specs.update({"grid_large":{"grid":[49]},
+                  "path_large": {"path":  [9,10,100]},
                   "fc_large": {"fc": [15,16,17]},
                   "barbell_large": {"barbell": [15,16,17]},
                   "ladder_large": {"ladder": [15,16,17]},
                   "random_tree_large": {"random_tree": [15,16,17]},
-                  "wheel_large": {"wheel": [15,16,17]},
+                  "wheel_large": {"wheel": [15,16,17,100]},
                  })
 
 

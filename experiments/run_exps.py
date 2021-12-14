@@ -31,8 +31,10 @@ from constants import *
 # Train-test pairs ------------------------------------------------------------
 
 def in_sample_experiment(struct):
-    train_set_name = struct + "_small"
-    test_set_name  = struct + "_small"
+    # train_set_name = struct + "_small"
+    # test_set_name  = struct + "_small"
+    train_set_name = struct + "_large"
+    test_set_name  = struct + "_large"
     run_experiment(train_set_name, test_set_name)
 
 def out_of_sample_experiment(struct,struct2):
