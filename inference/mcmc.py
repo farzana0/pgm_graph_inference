@@ -12,7 +12,7 @@ from collections import Counter
 import numpy as np
 
 from inference.core import Inference
-
+from  tqdm import tqdm
 
 class GibbsSampling(Inference):
     """Gibbs sampling for binaryMRF.
